@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "moduleResolution": "node",
+        "module": "ESNext",
+        "lib": ["ESNext"],
+        "allowJs": true,
+        "checkJs": false,
+        "declaration": false,
+        "noLib": false,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "pretty": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "allowUnreachableCode": true,
+        "allowUnusedLabels": true,
+        "noImplicitAny": false,
+        "noImplicitReturns": false,
+        "noImplicitUseStrict": false,
+        "outDir": "build/",
+        "rootDir": ".",
+        "listFiles": false,
+        "noEmitHelpers": false
+    },
+    "include": ["scripts/**/*"],
+    "exclude": ["node_modules"],
+    "compileOnSave": false
+}

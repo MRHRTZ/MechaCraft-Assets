@@ -1,0 +1,18 @@
+{
+    "min_engine_version": [
+        1,
+        19,
+        80
+    ],
+    "all_version": [
+        1,
+        1,
+        24
+    ],
+    "bp": {
+        "uuid": "2e91ee3b-1b91-4153-ac60-ecadab7f5c9d"
+    },
+    "rp": {
+        "uuid": "c6aa6935-8556-47c3-849f-dd2e9986929d"
+    }
+}

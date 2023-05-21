@@ -1,0 +1,42 @@
+{
+    "format_version": 2,
+    "metadata": {
+        "authors": [
+            "MRHRTZ"
+        ],
+        "generated_with": {
+            "bridge": [
+                "2.2.9"
+            ],
+            "dash": [
+                "0.8.11"
+            ]
+        }
+    },
+    "header": {
+        "name": "MechaAssets [RP]",
+        "description": "§6Resource Pack §a1.1.24",
+        "min_engine_version": [
+            1,
+            19,
+            80
+        ],
+        "uuid": "c6aa6935-8556-47c3-849f-dd2e9986929d",
+        "version": [
+            1,
+            1,
+            24
+        ]
+    },
+    "modules": [
+        {
+            "type": "resources",
+            "uuid": "b939de9b-700d-4607-92bf-62b372fd9c12",
+            "version": [
+                1,
+                0,
+                0
+            ]
+        }
+    ]
+}
