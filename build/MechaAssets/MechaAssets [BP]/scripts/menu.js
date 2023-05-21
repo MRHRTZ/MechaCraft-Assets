@@ -56,3 +56,4 @@ export function MenuForm(player) {
         }
     });
 }
+//# sourceMappingURL=menu.js.map

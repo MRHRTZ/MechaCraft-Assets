@@ -445,3 +445,4 @@ export const faktaText = [
     "Rata-rata klakson mobil berbunyi pada nada F",
     "Pria lebih mampu membaca tulisan dengan ukuran huruf kecil daripada wanita.",
 ];
+//# sourceMappingURL=fakta.js.map

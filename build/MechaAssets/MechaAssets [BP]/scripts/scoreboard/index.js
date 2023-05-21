@@ -89,3 +89,4 @@ ${runningTextGlobal.length > 0 ? "§r§6| §o§f" + runningTextGlobal[0] + "\n "
     if (!isScoreShow)
         player.onScreenDisplay.clearTitle();
 }
+//# sourceMappingURL=index.js.map

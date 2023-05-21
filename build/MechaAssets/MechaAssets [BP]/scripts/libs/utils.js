@@ -353,3 +353,4 @@ function showErrorToOP(e) {
     }
 }
 export { viewObj, isPlayerExist, getPlayer, getInventory, capitalizeLetter, letter2Id, getPlayers, getScore, setScore, addScore, removeScore, shopBodyInfo, msToTime, timeToDay, colorOptions, formatOptions, hari, bulan, getRandomColor, getRandomFakta, getRawDateNow, getTimeNow, getDateNow, showErrorToOP, };
+//# sourceMappingURL=utils.js.map
