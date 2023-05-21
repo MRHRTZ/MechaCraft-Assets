@@ -66,7 +66,7 @@ function update_version() {
 }
 
 function copy(source, destination) {
-    fs.copySync(source, destination), { overwrite: true };
+    fs.copySync(source, destination, { overwrite: true });
 }
 
 function clean_build() {
