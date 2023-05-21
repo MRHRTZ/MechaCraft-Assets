@@ -1,4 +1,5 @@
 import { BeforeChatEvent, world } from "@minecraft/server";
+
 import * as utils from "../libs/utils";
 import * as rank from "../chatrank/index";
 

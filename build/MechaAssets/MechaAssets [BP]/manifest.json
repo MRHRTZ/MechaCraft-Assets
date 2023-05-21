@@ -2,12 +2,12 @@
     "format_version": 2,
     "header": {
         "name": "MechaAssets [BP]",
-        "description": "§6Behavior Pack §a1.1.26",
-        "uuid": "371b79fe-bb3f-4b93-b746-8ddb2af69701",
+        "description": "§6Behavior Pack §a1.1.28",
+        "uuid": "184849c9-37d0-47ae-bc2c-eb18d58ed050",
         "version": [
             1,
             1,
-            26
+            28
         ],
         "min_engine_version": [
             1,
@@ -38,5 +38,8 @@
             "module_name": "@minecraft/server-ui",
             "version": "1.0.0-beta"
         }
+    ],
+    "capabilities": [
+        "script_eval"
     ]
 }
