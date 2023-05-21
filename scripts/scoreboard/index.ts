@@ -68,16 +68,15 @@ export function ScoreboardManager(player, isMenu) {
     }
 }
 
-export function showScoreboard(player: Player) {
+export function showScoreboard(player: Player, time: number) {
     let money = utils.getScore(player, "money");
-    let time = world.getTime();
     let isScoreShow = checkScoreboard(player);
 
     let screenDisplay = `
            §¶§l§cMecha§aCraft§r
 
  §fHari ke   §c: §6${Math.floor(world.getAbsoluteTime() / 24000) + 1}
- §fWaktu     §c: §d${utils.timeToDay(time)} §f[§7${time}§f]
+ §fWaktu     §c: §d${utils.timeToDay(time)}
  §fNama      §c: §e${player.nameTag}
  §fUang      §c: §a${money}
  §fKoor      §c: §7${Object.values(player.location)
@@ -95,4 +94,26 @@ ${runningTextGlobal.length > 0 ? "§r§6| §o§f" + runningTextGlobal[0] + "\n "
 
     player.onScreenDisplay.setTitle(isScoreShow ? screenDisplay : "");
     if (!isScoreShow) player.onScreenDisplay.clearTitle();
+}
+
+export function messageInfo(player: Player) {
+    let message = [
+        "§r§l§c[§eMecha Info§c]§r §a Untuk perintah server silahkan ketik §b.help",
+        "§r§l§c[§eMecha Info§c]§r §a Setiap pergantian hari anda akan mendapatkan uang 1000-7000",
+        "§r§l§c[§eMecha Info§c]§r §6 Jgn lupa follow instagram admin §a@hanif_az.sq.61 §6& §a@sgt_prstyo",
+        `§r§l§c[§eMecha Facts§c]§r ${utils.getRandomColor()} ${utils.getRandomFakta()}`,
+        `§r§l§c[§eMecha Facts§c]§r ${utils.getRandomColor()} ${utils.getRandomFakta()}`,
+        `§r§l§c[§eMecha Facts§c]§r ${utils.getRandomColor()} ${utils.getRandomFakta()}`,
+        `§r§l§c[§eMecha Facts§c]§r ${utils.getRandomColor()} ${utils.getRandomFakta()}`,
+        `§r§l§c[§eMecha Facts§c]§r ${utils.getRandomColor()} ${utils.getRandomFakta()}`,
+        `§r§l§c[§eMecha Facts§c]§r ${utils.getRandomColor()} ${utils.getRandomFakta()}`,
+    ];
+    player.sendMessage(`${message[Math.floor(Math.random() * message.length)]}`);
+}
+
+export function giftPlayer(player: Player) {
+    let randomAmount = Math.floor(Math.random() * 6000) + 1000;
+    utils.addScore(player, "money", randomAmount);
+    player.sendMessage(`§r§l§c[§bGIFT§c]§r §cSelamat Pagi §aKamu mendapatkan §eUang §asebesar §e${randomAmount}`);
+    player.playSound("random.toast");
 }

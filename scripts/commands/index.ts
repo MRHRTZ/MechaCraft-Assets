@@ -3,6 +3,10 @@ import { BeforeChatEvent, world } from "@minecraft/server";
 import * as utils from "../libs/utils";
 import * as rank from "../chatrank/index";
 
+// just define
+world;
+rank;
+
 export function showHelp(cmd: any) {
     return `
 ${cmd ? `§o§cGagal ekseskusi perintah §b${cmd}§r\n` : ""}
@@ -143,6 +147,6 @@ export const commands = (msg: BeforeChatEvent) => {
                 break;
         }
     } catch (error) {
-        player.sendMessage(utils.viewObj(error));
+        utils.showErrorToOP(error);
     }
 };

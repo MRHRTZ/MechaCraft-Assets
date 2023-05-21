@@ -3,6 +3,20 @@ import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/serve
 import * as utils from "../libs/utils";
 import * as menu from "../menu";
 
+import { BuildingBlocks } from "./Building Block/main";
+import { NaturalBlocks } from "./Natural Block/main";
+import { FunctionalBlocks } from "./Functional Block/main";
+import { RedstoneTools } from "./Redstone Tool/main";
+import { EquipmentsUtilities } from "./Equipment Utilities/main";
+import { FoodsFarms } from "./Food Farm/main";
+import { Dyes } from "./Dyes/main";
+import { Ores } from "./Ores/main";
+import { MobDrops } from "./Mob Drop/main";
+import { SpawnEggs } from "./Spawn Egg/main";
+import { Potions } from "./Potion/main";
+import { Enchantments } from "./Enchantment/main";
+import { EXP } from "./exp";
+
 export function ShopUI(player, isMenu) {
     const shopui = new ActionFormData()
         .title(`§l§cMecha §bOfficial §6Shop`)
@@ -28,48 +42,48 @@ export function ShopUI(player, isMenu) {
         .button(`EXP`, "textures/items/experience_bottle");
     shopui.show(player).then((result) => {
         if (isMenu && result.canceled) return menu.MenuForm(player);
-        // if (result.selection == 0) {
-        //     Transfer(player);
-        // }
-        // if (result.selection == 1) {
-        //     BuildingBlocks(player);
-        // }
-        // if (result.selection == 2) {
-        //     NaturalBlocks(player);
-        // }
-        // if (result.selection == 3) {
-        //     FunctionalBlocks(player);
-        // }
-        // if (result.selection == 4) {
-        //     RedstoneTools(player);
-        // }
-        // if (result.selection == 5) {
-        //     EquipmentsUtilities(player);
-        // }
-        // if (result.selection == 6) {
-        //     FoodsFarms(player);
-        // }
-        // if (result.selection == 7) {
-        //     Dyes(player);
-        // }
-        // if (result.selection == 8) {
-        //     Ores(player);
-        // }
-        // if (result.selection == 9) {
-        //     MobDrops(player);
-        // }
-        // if (result.selection == 10) {
-        //     SpawnEggs(player);
-        // }
-        // if (result.selection == 11) {
-        //     Potions(player);
-        // }
-        // if (result.selection == 12) {
-        //     Enchantments(player);
-        // }
-        // if (result.selection == 13) {
-        //     EXP(player);
-        // }
+        if (result.selection == 0) {
+            Transfer(player);
+        }
+        if (result.selection == 1) {
+            BuildingBlocks(player);
+        }
+        if (result.selection == 2) {
+            NaturalBlocks(player);
+        }
+        if (result.selection == 3) {
+            FunctionalBlocks(player);
+        }
+        if (result.selection == 4) {
+            RedstoneTools(player);
+        }
+        if (result.selection == 5) {
+            EquipmentsUtilities(player);
+        }
+        if (result.selection == 6) {
+            FoodsFarms(player);
+        }
+        if (result.selection == 7) {
+            Dyes(player);
+        }
+        if (result.selection == 8) {
+            Ores(player);
+        }
+        if (result.selection == 9) {
+            MobDrops(player);
+        }
+        if (result.selection == 10) {
+            SpawnEggs(player);
+        }
+        if (result.selection == 11) {
+            Potions(player);
+        }
+        if (result.selection == 12) {
+            Enchantments(player);
+        }
+        if (result.selection == 13) {
+            EXP(player);
+        }
     });
 }
 

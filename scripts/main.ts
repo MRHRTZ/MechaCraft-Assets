@@ -9,16 +9,46 @@ import * as waypoint from "./waypoint/index";
 import * as utils from "./libs/utils";
 
 let tickIndex = 0;
+let timeIndex = 0;
 
 function mainTick() {
     try {
         tickIndex++;
+        timeIndex = world.getTime();
 
         if (tickIndex === 100) {
             world.getDimension("overworld").runCommandAsync("say Mecha Asset Active");
         }
-    } catch (e: any) {
-        world.getDimension("overworld").runCommandAsync("say " + JSON.stringify(e));
+
+        for (let player of world.getPlayers()) {
+            if (player.hasTag("shop_ui")) {
+                shop.ShopUI(player, false);
+                player.runCommandAsync(`tag @s remove shop_ui`);
+            }
+
+            if (player.hasTag("tpa_ui")) {
+                let fromPlayer = player
+                    .getTags()
+                    .filter((v) => v.includes("tpa:"))[0]
+                    ?.split(":")[1];
+                if (fromPlayer) tpa.TpaUI(player, fromPlayer);
+                player.removeTag("tpa_ui");
+            }
+
+            if (tickIndex % 4 == 0) {
+                score.showScoreboard(player, timeIndex);
+            }
+
+            if (tickIndex % 10000 == 0) {
+                score.messageInfo(player);
+            }
+
+            if (timeIndex == 0) {
+                score.giftPlayer(player);
+            }
+        }
+    } catch (e) {
+        utils.showErrorToOP(e);
     }
 
     system.run(mainTick);

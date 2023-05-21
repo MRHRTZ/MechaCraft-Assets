@@ -4,8 +4,6 @@
         "moduleResolution": "node",
         "module": "ESNext",
         "lib": ["ESNext"],
-        "allowJs": true,
-        "checkJs": false,
         "declaration": false,
         "noLib": false,
         "emitDecoratorMetadata": true,
