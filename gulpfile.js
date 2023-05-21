@@ -169,7 +169,8 @@ gulp.task("bp-dev", async function () {
     compile_scripts();
     let copy_source = "build/MechaAssets/";
     let copy_target =
-        "C:\\Users\\MRHRTZ\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\development_behavior_packs";
+        os.homedir() +
+        "\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\development_behavior_packs";
     copy(copy_source, copy_target);
     logger.info("Done.");
 });
