@@ -73,3 +73,4 @@ export function ChatManageForm(player, isMenu) {
         player.sendMessage(utils.viewObj(error));
     }
 }
+//# sourceMappingURL=index.js.map

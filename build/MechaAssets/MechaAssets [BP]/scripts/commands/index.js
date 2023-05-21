@@ -115,3 +115,4 @@ export const commands = (msg) => {
         player.sendMessage(utils.viewObj(error));
     }
 };
+//# sourceMappingURL=index.js.map

@@ -72,3 +72,4 @@ export function TpaUI(player, fromPlayer) {
         }
     });
 }
+//# sourceMappingURL=index.js.map

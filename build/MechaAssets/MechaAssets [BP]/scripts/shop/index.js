@@ -104,3 +104,4 @@ export function Transfer(player) {
         }
     });
 }
+//# sourceMappingURL=index.js.map

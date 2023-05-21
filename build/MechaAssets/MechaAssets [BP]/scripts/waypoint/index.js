@@ -185,3 +185,4 @@ export function WaypointSection(player) {
         player.sendMessage(utils.viewObj(error));
     }
 }
+//# sourceMappingURL=index.js.map
