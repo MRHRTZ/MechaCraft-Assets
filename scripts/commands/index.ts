@@ -60,9 +60,12 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                 break;
             case ".vshop":
                 player.runCommandAsync(
-                    `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§bBerhasil membuka Shop GUI, tutup chat dalam §c2§b detik atau sesi langsung berakhir."}]}`
+                    `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§evshop untuk sementara tidak bisa digunakan."}]}`
                 );
-                player.addTag("shop_ui");
+                // player.runCommandAsync(
+                //     `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§bBerhasil membuka Shop GUI, tutup chat dalam §c2§b detik atau sesi langsung berakhir."}]}`
+                // );
+                // player.addTag("shop_ui");
                 break;
             case ".tpa":
                 player.runCommandAsync(
