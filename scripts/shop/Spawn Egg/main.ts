@@ -4,11 +4,10 @@ Creator: MRHRTZ
 ----------------------------------
 */
 
-import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import { AnimalMob } from "./mob_animal";
-import { UndeadMob } from "./mob_undead";
-import { SpawnerMob } from "./mob_spawner";
+import * as item from "./items";
+import { shopItem } from "../itemForm";
+import { getScore } from "../../libs/utils";
 
 export function SpawnEggs(player) {
     const gui = new ActionFormData()
@@ -25,21 +24,13 @@ export function SpawnEggs(player) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            AnimalMob(player);
+            shopItem(player, "Animal Mob", item.animalData);
         }
         if (result.selection == 1) {
-            UndeadMob(player);
+            shopItem(player, "Undead Mob", item.undeadData);
         }
         if (result.selection == 2) {
-            SpawnerMob(player);
+            shopItem(player, "Spawner Mob", item.spawnerData);
         }
     });
-}
-
-function getScore(entity, objective) {
-    try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
-    } catch (error) {
-        return 0;
-    }
 }

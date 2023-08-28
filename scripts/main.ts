@@ -1,12 +1,11 @@
 import { world, system } from "@minecraft/server";
-import * as menu from "./menu";
-import * as shop from "./shop/index";
-import * as tpa from "./tpa/index";
-import * as chat from "./chatrank/index";
-import * as command from "./commands/index";
-import * as score from "./scoreboard/index";
-import * as waypoint from "./waypoint/index";
-import * as utils from "./libs/utils";
+import { MenuForm } from "./menu";
+import { ShopUI } from "./shop/index";
+import { TpaUI } from "./tpa/index";
+import { checkRank } from "./chatrank/index";
+import { commands } from "./commands/index";
+import { showScoreboard, giftPlayer, messageInfo } from "./scoreboard/index";
+import { showErrorToOP } from "./libs/utils";
 
 let tickIndex = 0;
 let timeIndex = 0;
@@ -14,15 +13,24 @@ let timeIndex = 0;
 function mainTick() {
     try {
         tickIndex++;
-        timeIndex = world.getTime();
+        timeIndex = world.getTimeOfDay();
 
         if (tickIndex === 100) {
-            world.getDimension("overworld").runCommandAsync("say Mecha Asset Active");
+            world.getDimension("overworld").runCommandAsync("say §aMecha Asset Active");
+            world.scoreboard.addObjective("money", "money");
         }
 
         for (let player of world.getPlayers()) {
+            const rankObj = checkRank(player).split("|");
+            let rankName = rankObj[0];
+            let rankColor = rankObj[1];
+            let rankFormat = rankObj[2];
+
+            const nametagFormat = `${rankColor}${rankFormat}[${rankName}]§r §3${player.name}`;
+            player.nameTag = nametagFormat;
+
             if (player.hasTag("shop_ui")) {
-                shop.ShopUI(player, false);
+                ShopUI(player);
                 player.runCommandAsync(`tag @s remove shop_ui`);
             }
 
@@ -31,51 +39,51 @@ function mainTick() {
                     .getTags()
                     .filter((v) => v.includes("tpa:"))[0]
                     ?.split(":")[1];
-                if (fromPlayer) tpa.TpaUI(player, fromPlayer);
+                if (fromPlayer) TpaUI(player, fromPlayer);
                 player.removeTag("tpa_ui");
             }
 
             if (tickIndex % 4 == 0) {
-                score.showScoreboard(player, timeIndex);
+                showScoreboard(player, timeIndex);
             }
 
             if (tickIndex % 10000 == 0) {
-                score.messageInfo(player);
+                messageInfo(player);
             }
 
             if (timeIndex == 0) {
-                score.giftPlayer(player);
+                giftPlayer(player);
             }
         }
     } catch (e) {
-        utils.showErrorToOP(e);
+        showErrorToOP(e);
     }
 
     system.run(mainTick);
 }
 
-world.events.beforeItemUse.subscribe((eventData) => {
+world.afterEvents.itemUse.subscribe(async (eventData) => {
     try {
-        let item = eventData.item;
+        let item = eventData.itemStack;
         let player = eventData.source;
         if (item.typeId == "ms:menu_ui") {
-            menu.MenuForm(player);
+            await MenuForm(player);
         }
     } catch (e) {
-        utils.showErrorToOP(e);
+        showErrorToOP(e);
     }
 });
 
-world.events.beforeChat.subscribe(async (msg) => {
+world.beforeEvents.chatSend.subscribe(async (msg) => {
     try {
         const message = msg.message;
         const cmd = message.toLowerCase().split(/ +/g)[0] || "";
         if (cmd.startsWith(".")) {
             msg.cancel = true;
-            command.commands(msg);
+            commands(msg);
         } else {
             const player = msg.sender;
-            const rankObj = chat.checkRank(player).split("|");
+            const rankObj = checkRank(player).split("|");
             let rankName = rankObj[0];
             let rankColor = rankObj[1];
             let rankFormat = rankObj[2];
@@ -84,8 +92,28 @@ world.events.beforeChat.subscribe(async (msg) => {
             player.runCommandAsync(`tellraw @a {"rawtext":[{"text":"${chatFormat}"}]}`);
         }
     } catch (e) {
-        utils.showErrorToOP(e);
+        showErrorToOP(e);
     }
+});
+
+world.afterEvents.playerSpawn.subscribe(async (obj) => {
+    let player = obj.player;
+
+    if (obj.initialSpawn) {
+        player.sendMessage(
+            `Halo §6${player.nameTag}§f Selamat datang di §aMecha§cCraft §f Gunakan perintah §b.help §funtuk membuka bantuan perintah.`
+        );
+    }
+});
+
+world.afterEvents.playerJoin.subscribe(async (player) => {
+    let id = player.playerId;
+    let name = player.playerName;
+});
+
+world.afterEvents.playerLeave.subscribe(async (player) => {
+    let id = player.playerId;
+    let name = player.playerName;
 });
 
 system.run(mainTick);

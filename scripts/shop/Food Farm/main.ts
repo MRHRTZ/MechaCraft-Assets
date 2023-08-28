@@ -7,12 +7,9 @@ Creator: MRHRTZ
 import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
 
-import { RawMeatFood } from "./raw_meat_food";
-import { CookedMeatFood } from "./cooked_meat_food";
-import { MiscellaneousFood } from "./miscellaneous_food";
-import { FarmSeed } from "./farm_seed";
-import { FarmCrop } from "./farm_crop";
-import { FarmSapling } from "./farm_sapling";
+import * as item from "./items";
+import { shopItem } from "../itemForm";
+import { getScore } from "../../libs/utils";
 
 export function FoodsFarms(player) {
     const gui = new ActionFormData()
@@ -32,30 +29,22 @@ export function FoodsFarms(player) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            RawMeatFood(player);
+            shopItem(player, "RawMeatFood", item.rawMeatData);
         }
         if (result.selection == 1) {
-            CookedMeatFood(player);
+            shopItem(player, "CookedMeatFood", item.cookedMeatData);
         }
         if (result.selection == 2) {
-            MiscellaneousFood(player);
+            shopItem(player, "MiscellaneousFood", item.miscellaneousData);
         }
         if (result.selection == 3) {
-            FarmSeed(player);
+            shopItem(player, "FarmSeed", item.farmSeedData);
         }
         if (result.selection == 4) {
-            FarmCrop(player);
+            shopItem(player, "FarmCrop", item.farmCropData);
         }
         if (result.selection == 5) {
-            FarmSapling(player);
+            shopItem(player, "FarmSapling", item.farmSaplingData);
         }
     });
-}
-
-function getScore(entity, objective) {
-    try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
-    } catch (error) {
-        return 0;
-    }
 }

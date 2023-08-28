@@ -5,18 +5,10 @@ Creator: MRHRTZ
 */
 
 import { world } from "@minecraft/server";
-import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
+import { ActionFormData } from "@minecraft/server-ui";
 
-import { Helmet } from "./helmet";
-import { Chestplate } from "./chestplate";
-import { Leggings } from "./leggings";
-import { Boots } from "./boots";
-import { Sword } from "./sword";
-import { Axe } from "./axe";
-import { Pickaxe } from "./pickaxe";
-import { Shovel } from "./shovel";
-import { Hoe } from "./hoe";
-import { Utilities } from "./utilities";
+import * as item from "./items";
+import { shopItem } from "../itemForm";
 
 export function EquipmentsUtilities(player) {
     const gui = new ActionFormData()
@@ -40,41 +32,41 @@ export function EquipmentsUtilities(player) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            Helmet(player);
+            shopItem(player, "Helmet", item.helmetData);
         }
         if (result.selection == 1) {
-            Chestplate(player);
+            shopItem(player, "Chestplate", item.chestplateData);
         }
         if (result.selection == 2) {
-            Leggings(player);
+            shopItem(player, "Leggings", item.leggingsData);
         }
         if (result.selection == 3) {
-            Boots(player);
+            shopItem(player, "Boots", item.bootsData);
         }
         if (result.selection == 4) {
-            Sword(player);
+            shopItem(player, "Sword", item.swordData);
         }
         if (result.selection == 5) {
-            Axe(player);
+            shopItem(player, "Axe", item.axeData);
         }
         if (result.selection == 6) {
-            Pickaxe(player);
+            shopItem(player, "Pickaxe", item.pickaxeData);
         }
         if (result.selection == 7) {
-            Shovel(player);
+            shopItem(player, "Shovel", item.shovelData);
         }
         if (result.selection == 8) {
-            Hoe(player);
+            shopItem(player, "Hoe", item.hoeData);
         }
         if (result.selection == 9) {
-            Utilities(player);
+            shopItem(player, "Utilities", item.utilitiesData);
         }
     });
 }
 
 function getScore(entity, objective) {
     try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
+        return world.scoreboard.getObjective(objective).getScore(entity);
     } catch (error) {
         return 0;
     }

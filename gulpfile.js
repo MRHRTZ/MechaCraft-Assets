@@ -126,9 +126,9 @@ function packRP() {
     let addonsVersion = JSON.parse(fs.readFileSync(pathGlovalVersion));
     create_folder("dist");
     zipper.sync
-        .zip(`build/${addonsName}/${addonsName} [BP]`)
+        .zip(`build/${addonsName}/${addonsName} [RP]`)
         .compress()
-        .save(`dist/${addonsName} [BP] v${addonsVersion.all_version.join(".")}.mcpack`);
+        .save(`dist/${addonsName} [RP] v${addonsVersion.all_version.join(".")}.mcpack`);
 }
 
 gulp.task("default", async function () {

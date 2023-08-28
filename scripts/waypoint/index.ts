@@ -1,7 +1,7 @@
 import { world, Player } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
 
-import * as utils from "../libs/utils";
+import { viewObj } from "../libs/utils";
 
 // Functions
 export function addWaypoint(player, name) {
@@ -88,7 +88,7 @@ export function setViewerWaypoint(player, viewAsPublic) {
 }
 
 // Forms
-export function WaypointForm(player, isMenu) {
+export function WaypointForm(player) {
     let form = new ActionFormData();
     form.title(`§l§cMecha §2Waypoint`);
     form.body(`§6Teleportasi cepat menggunakan waypoint`);
@@ -147,7 +147,7 @@ export function WaypointDeleteForm(player) {
             );
         }
     } catch (error) {
-        player.sendMessage(utils.viewObj(error));
+        player.sendMessage(viewObj(error));
     }
 }
 
@@ -194,6 +194,6 @@ export function WaypointSection(player) {
             );
         }
     } catch (error) {
-        player.sendMessage(utils.viewObj(error));
+        player.sendMessage(viewObj(error));
     }
 }

@@ -4,14 +4,11 @@ Creator: MRHRTZ
 ----------------------------------
 */
 
-import { world } from "@minecraft/server";
-import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
+import { ActionFormData } from "@minecraft/server-ui";
 
-import { AllPurpose } from "./all_purpose";
-import { Armor } from "./armor";
-import { MeleeWeapon } from "./melee_weapon";
-import { RangedWeapon } from "./ranged_weapon";
-import { Tool } from "./tool";
+import * as item from "./items";
+import { enchantShopItem } from "../itemForm";
+import { getScore } from "../../libs/utils";
 
 export function Enchantments(player) {
     const gui = new ActionFormData()
@@ -30,27 +27,19 @@ export function Enchantments(player) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            AllPurpose(player);
+            enchantShopItem(player, "All Purpose", item.allPurposeData);
         }
         if (result.selection == 1) {
-            Armor(player);
+            enchantShopItem(player, "Armor", item.armorData);
         }
         if (result.selection == 2) {
-            MeleeWeapon(player);
+            enchantShopItem(player, "Melee Weapon", item.meleeWeaponData);
         }
         if (result.selection == 3) {
-            RangedWeapon(player);
+            enchantShopItem(player, "Ranged Weapon", item.rangedWeaponData);
         }
         if (result.selection == 4) {
-            Tool(player);
+            enchantShopItem(player, "Tool", item.toolData);
         }
     });
-}
-
-function getScore(entity, objective) {
-    try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
-    } catch (error) {
-        return 0;
-    }
 }

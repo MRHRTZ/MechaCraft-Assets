@@ -4,15 +4,12 @@ Creator: MRHRTZ
 ----------------------------------
 */
 
-import { world, Player } from "@minecraft/server";
-import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
+import { Player } from "@minecraft/server";
+import { ActionFormData } from "@minecraft/server-ui";
 
-import { Wood } from "./wood";
-import { Stone } from "./stone";
-import { Glass } from "./glass";
-import { Wool } from "./wool";
-import { Concrete } from "./concrete";
-import { Terracotta } from "./terracotta";
+import * as item from "./items";
+import { getScore } from "../../libs/utils";
+import { shopItem } from "../itemForm";
 
 export function BuildingBlocks(player: Player | any) {
     const gui = new ActionFormData()
@@ -32,30 +29,22 @@ export function BuildingBlocks(player: Player | any) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            Wood(player);
+            shopItem(player, "Wood Blocks", item.woodData);
         }
         if (result.selection == 1) {
-            Stone(player);
+            shopItem(player, "Stone Blocks", item.stoneData);
         }
         if (result.selection == 2) {
-            Glass(player);
+            shopItem(player, "Glass Blocks", item.glassData);
         }
         if (result.selection == 3) {
-            Wool(player);
+            shopItem(player, "Wool Blocks", item.woolData);
         }
         if (result.selection == 4) {
-            Concrete(player);
+            shopItem(player, "Concrete Blocks", item.concreteData);
         }
         if (result.selection == 5) {
-            Terracotta(player);
+            shopItem(player, "Terracotta Blocks", item.terracottaData);
         }
     });
-}
-
-function getScore(entity, objective) {
-    try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
-    } catch (error) {
-        return 0;
-    }
 }

@@ -7,9 +7,9 @@ Creator: MRHRTZ
 import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
 
-import { Overworld } from "./overworld";
-import { Nether } from "./nether";
-import { TheEnd } from "./the_end";
+import * as item from "./items";
+import { shopItem } from "../itemForm";
+import { getScore } from "../../libs/utils";
 
 export function NaturalBlocks(player) {
     const gui = new ActionFormData()
@@ -26,21 +26,13 @@ export function NaturalBlocks(player) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            Overworld(player);
+            shopItem(player, "Overworld", item.overworldData);
         }
         if (result.selection == 1) {
-            Nether(player);
+            shopItem(player, "Nether", item.netherData);
         }
         if (result.selection == 2) {
-            TheEnd(player);
+            shopItem(player, "TheEnd", item.theEndData);
         }
     });
-}
-
-function getScore(entity, objective) {
-    try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
-    } catch (error) {
-        return 0;
-    }
 }

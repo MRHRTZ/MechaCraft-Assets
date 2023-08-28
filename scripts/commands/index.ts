@@ -1,11 +1,6 @@
-import { BeforeChatEvent, world } from "@minecraft/server";
-
-import * as utils from "../libs/utils";
-import * as rank from "../chatrank/index";
-
-// just define
-world;
-rank;
+import { world, ChatSendBeforeEvent } from "@minecraft/server";
+import { viewObj, isPlayerExist, getPlayer, showErrorToOP } from "../libs/utils";
+// import * as rank from "../chatrank/index";
 
 export function showHelp(cmd: any) {
     return `
@@ -21,7 +16,7 @@ ${cmd ? `§o§cGagal ekseskusi perintah §b${cmd}§r\n` : ""}
 §6.tpadeny <username> §c- §o§eTolak permintaan teleport§r`;
 }
 
-export const commands = (msg: BeforeChatEvent) => {
+export const commands = async (msg: ChatSendBeforeEvent) => {
     var player = msg.sender;
     try {
         const cmd = msg.message.toLowerCase().split(/ +/g)[0] || "";
@@ -40,9 +35,9 @@ export const commands = (msg: BeforeChatEvent) => {
                 if (!isOp) return player.sendMessage("§r§l§c[§eEVAL§c]§r §cOP ONLY");
                 try {
                     let evalResult = eval(args.slice(1).join(" "));
-                    player.sendMessage(utils.viewObj(evalResult));
+                    player.sendMessage(viewObj(evalResult));
                 } catch (error) {
-                    player.sendMessage(utils.viewObj(error));
+                    player.sendMessage(viewObj(error));
                 }
                 break;
             case ".menu":
@@ -81,15 +76,15 @@ export const commands = (msg: BeforeChatEvent) => {
                         `tellraw @s {"rawtext":[{"text":"\n§l§bPenggunaan : \n§r§6.tparequest username"}]}`
                     );
                 const playerReq = args.slice(1).join(" ");
-                if (!utils.isPlayerExist(playerReq)) {
+                if (!isPlayerExist(playerReq)) {
                     player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"§l§6[TPA] §r§cTidak dapat menemukan player dengan nama §b${playerReq}"}]}`
                     );
                 } else {
-                    if (player.name == utils.getPlayer(playerReq).name)
+                    if (player.name == getPlayer(playerReq).name)
                         return player.sendMessage("§l§6[TPA] §r§cTidak bisa TP ke diri sendiri!");
-                    utils.getPlayer(playerReq).addTag("tpa_ui");
-                    utils.getPlayer(playerReq).addTag("tpa:" + player.nameTag.replace(/ /g, "_"));
+                    getPlayer(playerReq).addTag("tpa_ui");
+                    getPlayer(playerReq).addTag("tpa:" + player.nameTag.replace(/ /g, "_"));
                     player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"§l§6[TPA] §r§7Kamu telah mengirim permintaan TP ke §2${playerReq}§6, mohon tunggu untuk disetujui.."}]}`
                     );
@@ -101,7 +96,7 @@ export const commands = (msg: BeforeChatEvent) => {
                         `tellraw @s {"rawtext":[{"text":"\n§l§bPenggunaan : \n§r§6.tpadeny username"}]}`
                     );
                 const playerAcc = args.slice(1).join(" ");
-                if (!utils.isPlayerExist(playerAcc)) {
+                if (!isPlayerExist(playerAcc)) {
                     player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"§l§6[TPA] §r§cTidak dapat menemukan player dengan nama §b${playerAcc}"}]}`
                     );
@@ -124,7 +119,7 @@ export const commands = (msg: BeforeChatEvent) => {
                         `tellraw @s {"rawtext":[{"text":"\n§l§bPenggunaan : \n§r§6.tpadeny username"}]}`
                     );
                 const playerDeny = args.slice(1).join(" ");
-                if (!utils.isPlayerExist(playerDeny)) {
+                if (!isPlayerExist(playerDeny)) {
                     player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"§l§6[TPA] §r§cTidak dapat menemukan player dengan nama §b${playerDeny}"}]}`
                     );
@@ -147,6 +142,6 @@ export const commands = (msg: BeforeChatEvent) => {
                 break;
         }
     } catch (error) {
-        utils.showErrorToOP(error);
+        showErrorToOP(error);
     }
 };

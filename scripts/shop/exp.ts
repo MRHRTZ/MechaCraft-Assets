@@ -1,6 +1,5 @@
 import { world } from "@minecraft/server";
-import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import * as utils from "../libs/utils";
+import { ModalFormData } from "@minecraft/server-ui";
 
 export function EXP(player) {
     var money = getScore(player, "money");
@@ -25,37 +24,36 @@ export function EXP(player) {
                     `tellraw @s {"rawtext":[{"text":"§r§l§c[§bM-SHOP§c]§r §cMasukan jumlah uang yang akan ditransfer"}]}`
                 ) && player.runCommandAsync(`playsound note.bass @s`)
             );
-        if (isNaN(res.formValues![0]))
+        let qty = res.formValues![0] as number;
+        if (isNaN(qty))
             return (
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§r§l§c[§bM-SHOP§c]§r §cHanya bisa input angka!"}]}`
                 ) && player.runCommandAsync(`playsound note.bass @s`)
             );
-        if (!isNaN(res.formValues![0])) {
-            let level = Number(res.formValues![0]);
-            let dataCost = level * sell;
-            try {
-                await player.runCommandAsync(
-                    `scoreboard players remove @s[scores={money=${dataCost}..}] money ${dataCost}`
-                );
-                player.runCommandAsync(`xp ${level}L @s`);
-                player.runCommandAsync(
-                    `tellraw @s {"rawtext":[{"text":"§r§l§c[§bM-SHOP§c]§r §aKamu berhasil membeli §eEXP Level §aDengan total: §e${dataCost}"}]}`
-                );
-                player.runCommandAsync(`playsound random.levelup @s`);
-            } catch (e) {
-                player.runCommandAsync(
-                    `tellraw @s {"rawtext":[{"text":"§r§l§c[§bM-SHOP§c]§r §cUang anda tidak mencukupi untuk membeli dengan jumlah §e${dataCost}"}]}`
-                );
-                player.runCommandAsync(`playsound note.bass @s`);
-            }
+        let level = Number(res.formValues![0]);
+        let dataCost = level * sell;
+        try {
+            await player.runCommandAsync(
+                `scoreboard players remove @s[scores={money=${dataCost}..}] money ${dataCost}`
+            );
+            player.runCommandAsync(`xp ${level}L @s`);
+            player.runCommandAsync(
+                `tellraw @s {"rawtext":[{"text":"§r§l§c[§bM-SHOP§c]§r §aKamu berhasil membeli §eEXP Level §aDengan total: §e${dataCost}"}]}`
+            );
+            player.runCommandAsync(`playsound random.levelup @s`);
+        } catch (e) {
+            player.runCommandAsync(
+                `tellraw @s {"rawtext":[{"text":"§r§l§c[§bM-SHOP§c]§r §cUang anda tidak mencukupi untuk membeli dengan jumlah §e${dataCost}"}]}`
+            );
+            player.runCommandAsync(`playsound note.bass @s`);
         }
     });
 }
 
 function getScore(entity, objective) {
     try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
+        return world.scoreboard.getObjective(objective).getScore(entity);
     } catch (error) {
         return 0;
     }

@@ -7,9 +7,9 @@ Creator: MRHRTZ
 import { world } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
 
-import { Bottle } from "./potion_bottle";
-import { Splash } from "./potion_splash";
-import { Lingering } from "./potion_lingering";
+import * as item from "./items";
+import { shopItem } from "../itemForm";
+import { getScore } from "../../libs/utils";
 
 export function Potions(player) {
     const gui = new ActionFormData()
@@ -26,21 +26,13 @@ export function Potions(player) {
     gui.show(player).then((result) => {
         if (result.canceled) return;
         if (result.selection == 0) {
-            Bottle(player);
+            shopItem(player, "Bottle", item.bottleData);
         }
         if (result.selection == 1) {
-            Splash(player);
+            shopItem(player, "Splash", item.splashData);
         }
         if (result.selection == 2) {
-            Lingering(player);
+            shopItem(player, "Lingering", item.lingeringData);
         }
     });
-}
-
-function getScore(entity, objective) {
-    try {
-        return world.scoreboard.getObjective(objective).getScore(entity.scoreboard);
-    } catch (error) {
-        return 0;
-    }
 }

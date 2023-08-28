@@ -1,14 +1,13 @@
-import { Player, world } from "@minecraft/server";
-import * as utils from "../libs/utils";
-import * as menu from "../menu";
-import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
+import { Player } from "@minecraft/server";
+import { colorOptions, formatOptions, viewObj, getPlayers } from "../libs/utils";
+import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 
 export function checkRank(player) {
     if (player.getTags().join("|").includes("rank:")) {
         const rank = player.getTags().filter((v) => v.includes("rank:"))[0];
         return rank.replace("rank:", "");
     } else {
-        return "MEMBER|§6|§l";
+        return "TAMU|§7|§l";
     }
 }
 
@@ -36,28 +35,29 @@ export function ChatRankPlayerManager(player: Player | any, admin: Player | any)
         let chats = new ModalFormData()
             .title(`Ubah Chat Text ${player.nameTag}`)
             .dropdown(
-                `§6-------------------------------\n\nInfomasi Pengguna:\n§fNama §c: §a${player.nameTag}\n§fFormat §c: §b${chatFormat}\n\n§6-------------------------------\n\n§6Color:`,
-                utils.colorOptions
+                `§6-------------------------------\n\nInfomasi Pengguna:\n§fID §c: §a${player.id}\n§fNama §c: §a${player.nameTag}\n§fFormat §c: §b${chatFormat}\n\n§6-------------------------------\n\n§6Color:`,
+                colorOptions
             )
-            .dropdown(`§6Format:`, utils.formatOptions)
+            .dropdown(`§6Format:`, formatOptions)
             .textField(`§6Chat Text:`, "Input Text");
         chats.show(admin).then(async (res) => {
-            let color = utils.colorOptions[res.formValues![0]].slice(0, 2);
-            let format = utils.formatOptions[res.formValues![1]].slice(0, 2);
+            let values = res.formValues as number[];
+            let color = colorOptions[values![0]].slice(0, 2);
+            let format = formatOptions[values![1]].slice(0, 2);
             let text = res.formValues![2];
             changeRank(player, text, color, format);
         });
     } catch (error) {
-        admin.sendMessage(utils.viewObj(error));
+        admin.sendMessage(viewObj(error));
     }
 }
 
-export function ChatManageForm(player: Player | any, isMenu: boolean) {
+export function ChatManageForm(player: Player | any) {
     try {
         let form = new ActionFormData();
         form.title(`§l§cChatRank §2Manager`);
         form.body(`§6Pilih player untuk mengedit tampilan chat`);
-        let players = utils.getPlayers();
+        let players = getPlayers();
         for (let targetPlayer of players) {
             const isOp =
                 targetPlayer.isOp() ||
@@ -67,16 +67,14 @@ export function ChatManageForm(player: Player | any, isMenu: boolean) {
             form.button(targetPlayer.nameTag, isOp ? "textures/ui/op" : "textures/ui/permissions_member_star");
         }
         form.show(player).then((result) => {
-            if (isMenu && result.canceled) return menu.MenuForm(player);
-            if (!result.canceled) {
-                if (result.selection! < players.length) {
-                    ChatRankPlayerManager(players[result.selection!], player);
-                } else {
-                    player.sendMessage("§l§6[TPA] §r§cPlayer tidak valid!");
-                }
+            if (result.canceled) return;
+            if (result.selection! < players.length) {
+                ChatRankPlayerManager(players[result.selection!], player);
+            } else {
+                player.sendMessage("§l§6[CHATRANK] §r§cPlayer tidak valid!");
             }
         });
     } catch (error) {
-        player.sendMessage(utils.viewObj(error));
+        player.sendMessage(viewObj(error));
     }
 }

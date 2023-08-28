@@ -1,7 +1,6 @@
 import { world, system, Player } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import * as utils from "../libs/utils";
-import * as menu from "../menu";
+import { getScore, getPlayers, isPlayerExist } from "../libs/utils";
 
 import { BuildingBlocks } from "./Building Block/main";
 import { NaturalBlocks } from "./Natural Block/main";
@@ -17,11 +16,11 @@ import { Potions } from "./Potion/main";
 import { Enchantments } from "./Enchantment/main";
 import { EXP } from "./exp";
 
-export function ShopUI(player, isMenu) {
+export function ShopUI(player) {
     const shopui = new ActionFormData()
         .title(`§l§cMecha §bOfficial §6Shop`)
         .body(
-            `§b------ §6[ Informasi Pemain ] §b------\n\n§fNama§c: §a${player.nameTag}\n§fUang§c: §a${utils.getScore(
+            `§b------ §6[ Informasi Pemain ] §b------\n\n§fNama§c: §a${player.nameTag}\n§fUang§c: §a${getScore(
                 player,
                 "money"
             )}\n\n§b-------------------------------`
@@ -41,7 +40,7 @@ export function ShopUI(player, isMenu) {
         .button(`Enchantment`, "textures/items/book_enchanted")
         .button(`EXP`, "textures/items/experience_bottle");
     shopui.show(player).then((result) => {
-        if (isMenu && result.canceled) return menu.MenuForm(player);
+        if (result.canceled) return;
         if (result.selection == 0) {
             Transfer(player);
         }
@@ -88,8 +87,8 @@ export function ShopUI(player, isMenu) {
 }
 
 export function Transfer(player: Player | any) {
-    var money = utils.getScore(player, "money");
-    let playersActive = utils.getPlayers(true).join(" §c|§b ");
+    var money = getScore(player, "money");
+    let playersActive = getPlayers(true).join(" §c|§b ");
     let brick = new ModalFormData()
         .title(`Transfer Uang`)
         .textField(
@@ -110,41 +109,40 @@ export function Transfer(player: Player | any) {
                     `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §cMasukan jumlah uang yang akan ditransfer"}]}`
                 ) && player.runCommandAsync(`playsound note.bass @s`)
             );
-        if (isNaN(res.formValues![1]))
+        let qty = res.formValues![1] as number;
+        if (isNaN(qty))
             return (
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §cHanya bisa input angka!"}]}`
                 ) && player.runCommandAsync(`playsound note.bass @s`)
             );
-        if (!isNaN(res.formValues![1])) {
-            let amount = Number(res.formValues![1]);
-            let playerName = res.formValues![0];
-            if (utils.isPlayerExist(playerName)) {
-                try {
-                    await player.runCommandAsync(
-                        `scoreboard players remove @s[scores={money=${amount}..}] money ${amount}`
-                    );
-                    player.runCommandAsync(`scoreboard players add "${playerName}" money ${amount}`);
-                    player.runCommandAsync(
-                        `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §aBerhasil transfer ke §e${playerName} §asebesar §e${amount}"}]}`
-                    );
-                    player.runCommandAsync(
-                        `tellraw "${playerName}" {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §aAnda telah ditransfer oleh §e${player.nameTag} §asebesar §e${amount}"}]}`
-                    );
-                    player.runCommandAsync(`playsound random.toast @s`);
-                    player.runCommandAsync(`playsound random.toast "${playerName}"`);
-                } catch (e) {
-                    player.runCommandAsync(
-                        `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §cUang anda tidak mencukupi untuk transfer dengan jumlah §e${amount}"}]}`
-                    );
-                    player.runCommandAsync(`playsound note.bass @s`);
-                }
-            } else {
+        let amount = Number(res.formValues![1]);
+        let playerName = res.formValues![0];
+        if (isPlayerExist(playerName)) {
+            try {
+                await player.runCommandAsync(
+                    `scoreboard players remove @s[scores={money=${amount}..}] money ${amount}`
+                );
+                player.runCommandAsync(`scoreboard players add "${playerName}" money ${amount}`);
                 player.runCommandAsync(
-                    `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §cTidak dapat menemukan player §b${playerName}"}]}`
+                    `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §aBerhasil transfer ke §e${playerName} §asebesar §e${amount}"}]}`
+                );
+                player.runCommandAsync(
+                    `tellraw "${playerName}" {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §aAnda telah ditransfer oleh §e${player.nameTag} §asebesar §e${amount}"}]}`
+                );
+                player.runCommandAsync(`playsound random.toast @s`);
+                player.runCommandAsync(`playsound random.toast "${playerName}"`);
+            } catch (e) {
+                player.runCommandAsync(
+                    `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §cUang anda tidak mencukupi untuk transfer dengan jumlah §e${amount}"}]}`
                 );
                 player.runCommandAsync(`playsound note.bass @s`);
             }
+        } else {
+            player.runCommandAsync(
+                `tellraw @s {"rawtext":[{"text":"§r§l§c[§bTRANSFER§c]§r §cTidak dapat menemukan player §b${playerName}"}]}`
+            );
+            player.runCommandAsync(`playsound note.bass @s`);
         }
     });
 }
