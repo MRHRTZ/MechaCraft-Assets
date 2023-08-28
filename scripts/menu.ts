@@ -13,15 +13,14 @@ export async function MenuForm(player: Player | any) {
     form.body(
         `§b------ §6[ Informasi Pemain ] §b------\n\n§fNama §c: §a${player.nameTag}\n\n§b-------------------------------`
     );
-    form.button("Toko", "textures/items/diamond");
-    form.button("Teleportasi ke Pemain", "textures/items/ender_pearl");
+    form.button("Toko", "textures/ui/Scaffolding");
+    form.button("Teleportasi ke Pemain", "textures/ui/warning_alex");
     const isOp = player.isOp() || player.hasTag("paradoxOpped") || player.hasTag("admin") || player.hasTag("worldedit");
-    if (isOp) form.button("Tampilan Pesan", "textures/ui/freeze_heart");
-    if (isOp) form.button("Catatan Server", "textures/ui/servers");
+    if (isOp) form.button("Tampilan Pesan", "textures/ui/multiplayer_glyph_color");
+    if (isOp) form.button("Catatan Server", "textures/ui/tiny_agnes");
     if (isOp) form.button("Pesan Berjalan", "textures/ui/comment");
-    form.button("Papan Info", "textures/ui/icon_sign");
-    form.button("Waypoint", "textures/ui/MashupIcon");
-
+    form.button("Papan Info", "textures/ui/storageIconColor");
+    form.button("Waypoint", "textures/ui/world_glyph_color");
     form.show(player).then((result) => {
         if (!result.canceled) {
             if (isOp) {
