@@ -14,9 +14,13 @@ const secondMaxVersion = 99;
 
 // === END CONFIGURABLE VARIABLES
 
+function read_version(pathGlobalVersion) {
+    return JSON.parse(fs.readFileSync(pathGlobalVersion));
+}
+
 function update_version() {
-    let = pathGlovalVersion = "assets/version_update.json";
-    let addonsVersion = JSON.parse(fs.readFileSync(pathGlovalVersion));
+    let = pathGlobalVersion = "assets/version_update.json";
+    let addonsVersion = read_version(pathGlobalVersion);
 
     let first = addonsVersion.all_version[0];
     let second = addonsVersion.all_version[1];
@@ -62,11 +66,60 @@ function update_version() {
     fs.writeFileSync(pathManifestBP, JSON.stringify(manifestBP, null, 4));
     fs.writeFileSync(pathManifestRP, JSON.stringify(manifestRP, null, 4));
 
-    fs.writeFileSync(pathGlovalVersion, JSON.stringify(addonsVersion, null, 4));
+    fs.writeFileSync(pathGlobalVersion, JSON.stringify(addonsVersion, null, 4));
+}
+
+function apply_server_version(replace = true) {
+    let = pathGlobalVersion = "assets/version_update.json";
+    let addonsVersion = read_version(pathGlobalVersion);
+
+    if (replace) {
+        const behaviorpack_manifest = [
+            {
+                pack_id: addonsVersion.bp.uuid,
+                version: addonsVersion.all_version,
+            },
+        ];
+        const resourcepack_manifest = [
+            {
+                pack_id: addonsVersion.rp.uuid,
+                version: addonsVersion.all_version,
+            },
+        ];
+        fs.writeFileSync("assets/Server/world_behavior_packs.json", JSON.stringify(behaviorpack_manifest, null, 4));
+        fs.writeFileSync("assets/Server/world_resource_packs.json", JSON.stringify(resourcepack_manifest, null, 4));
+    } else {
+        let behaviorpack = JSON.parse(fs.readFileSync("assets/Server/world_behavior_packs.json"));
+        let resourcepack = JSON.parse(fs.readFileSync("assets/Server/world_behavior_packs.json"));
+        behaviorpack.push({
+            pack_id: addonsVersion.bp.uuid,
+            version: addonsVersion.all_version,
+        });
+        resourcepack.push({
+            pack_id: addonsVersion.rp.uuid,
+            version: addonsVersion.all_version,
+        });
+        fs.writeFileSync("assets/Server/world_behavior_packs.json", JSON.stringify(behaviorpack_manifest, null, 4));
+        fs.writeFileSync("assets/Server/world_resource_packs.json", JSON.stringify(resourcepack_manifest, null, 4));
+    }
+}
+
+function copy_server_version_behavior(worldPath) {
+    let copy_source_behavior = "assets/Server/world_behavior_packs.json";
+    copyFile(copy_source_behavior, worldPath + "\\world_behavior_packs.json");
+}
+
+function copy_server_version_resource(worldPath) {
+    let copy_source_resource = "assets/Server/world_resource_packs.json";
+    copyFile(copy_source_resource, worldPath + "\\world_resource_packs.json");
 }
 
 function copy(source, destination) {
     fs.copySync(source, destination, { overwrite: true });
+}
+
+function copyFile(source, destination) {
+    fs.copyFileSync(source, destination);
 }
 
 function clean_build() {
@@ -189,16 +242,53 @@ gulp.task("bp-dev", async function () {
     logger.info("Done.");
 });
 
-gulp.task("bp-serv", async function () {
+// === SERVER BUILD
+
+const serverDir = "E:\\Data\\Games\\Minecraft\\VoiceCraft Test\\Mc Server";
+const worldDir = "\\worlds\\VoiceCraft";
+
+gulp.task("server", async function () {
+    update_version();
+    clean_build();
+    create_folder("build");
+    copy_resource_packs();
+    copy_behavior_packs();
+    compile_scripts();
+    apply_server_version();
+    let copy_source_behavior = "build/MechaAssets/MechaAssets [BP]";
+    let copy_target_behavior = serverDir + worldDir + "\\behavior_packs\\MechaAssets [BP]";
+    copy(copy_source_behavior, copy_target_behavior);
+    let copy_source_resource = "build/MechaAssets/MechaAssets [RP]";
+    let copy_target_resource = serverDir + worldDir + "\\resource_packs\\MechaAssets [RP]";
+    copy(copy_source_resource, copy_target_resource);
+    copy_server_version_behavior(serverDir + worldDir);
+    copy_server_version_resource(serverDir + worldDir);
+    logger.info("Done.");
+});
+
+gulp.task("bp-server", async function () {
     update_version();
     clean_build();
     create_folder("build");
     copy_behavior_packs();
     compile_scripts();
-    let copy_source = "build/MechaAssets/";
-    let copy_target =
-        os.homedir() +
-        "\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\development_behavior_packs";
-    copy(copy_source, copy_target);
+    apply_server_version();
+    let copy_source_behavior = "build/MechaAssets/MechaAssets [BP]";
+    let copy_target_behavior = serverDir + worldDir + "\\behavior_packs\\MechaAssets [BP]";
+    copy(copy_source_behavior, copy_target_behavior);
+    copy_server_version_behavior(serverDir + worldDir);
+    logger.info("Done.");
+});
+
+gulp.task("rp-server", async function () {
+    update_version();
+    clean_build();
+    create_folder("build");
+    copy_resource_packs();
+    apply_server_version();
+    let copy_source_resource = "build/MechaAssets/MechaAssets [RP]";
+    let copy_target_resource = serverDir + worldDir + "\\resource_packs\\MechaAssets [RP]";
+    copy(copy_source_resource, copy_target_resource);
+    copy_server_version_resource(serverDir + worldDir);
     logger.info("Done.");
 });

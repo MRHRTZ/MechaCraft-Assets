@@ -1,5 +1,6 @@
 import { world, ChatSendBeforeEvent } from "@minecraft/server";
-import { viewObj, isPlayerExist, getPlayer, showErrorToOP } from "../libs/utils";
+import { viewObj, isPlayerExist, getPlayer, showErrorToOP, print } from "../libs/utils";
+import { getRequest, postRequest } from "../libs/net-utils";
 // import * as rank from "../chatrank/index";
 
 export function showHelp(cmd: any) {
@@ -22,17 +23,14 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
     try {
         const cmd = msg.message.toLowerCase().split(/ +/g)[0] || "";
         const args = msg.message.split(/ +/g);
+        const isOp =
+            player.isOp() || player.hasTag("paradoxOpped") || player.hasTag("admin") || player.hasTag("worldedit");
 
         switch (cmd) {
             case prefix + "help":
-                player.runCommandAsync(`tellraw @s {"rawtext":[{"text":"${showHelp(null)}"}]}`);
+                print(player, showHelp(null));
                 break;
             case prefix + "eval":
-                const isOp =
-                    player.isOp() ||
-                    player.hasTag("paradoxOpped") ||
-                    player.hasTag("admin") ||
-                    player.hasTag("worldedit");
                 if (!isOp) return player.sendMessage("§r§l§c[§eEVAL§c]§r §cOP ONLY");
                 try {
                     let evalResult = eval(args.slice(1).join(" "));

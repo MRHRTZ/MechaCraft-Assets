@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server";
+import { Player, world } from "@minecraft/server";
 import { faktaText } from "./fakta";
 
 class Notes {
@@ -405,12 +405,20 @@ function getDateNow(date) {
     return `${date.getDate().toString().padStart(2, 0)} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
 }
 
+function print(player: Player, message: any) {
+    player.runCommandAsync(`tellraw @s {"rawtext":[{"text":"${message}"}]}`);
+}
+
 function showErrorToOP(e: Error | any) {
     for (let player of world.getPlayers()) {
         if (player.isOp() || player.hasTag("admin")) {
             player.sendMessage("Error: " + viewObj(e));
         }
     }
+}
+
+function isEmptyOrSpaces(str) {
+    return !str || str.match(/^ *$/) !== null;
 }
 
 export {
@@ -439,4 +447,6 @@ export {
     getTimeNow,
     getDateNow,
     showErrorToOP,
+    print,
+    isEmptyOrSpaces,
 };

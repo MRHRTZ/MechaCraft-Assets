@@ -111,7 +111,7 @@ ${runningTextGlobal.length > 0 ? "§r§6| §o§f" + runningTextGlobal[0] + "\n "
 
 export function messageInfo(player: Player) {
     let message = [
-        "§r§l§c[§eMecha Info§c]§r §a Untuk perintah server silahkan ketik §b.help",
+        "§r§l§c[§eMecha Info§c]§r §a Untuk perintah server silahkan ketik §b!help",
         "§r§l§c[§eMecha Info§c]§r §a Setiap pergantian hari anda akan mendapatkan uang 50-200",
         "§r§l§c[§eMecha Info§c]§r §6 Jgn lupa follow instagram admin §a@hanif_az.sq.61 §6& §a@sgt_prstyo",
         `§r§l§c[§eMecha Facts§c]§r ${getRandomColor()} ${getRandomFakta()}`,

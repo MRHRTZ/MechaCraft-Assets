@@ -6,6 +6,7 @@ import { TpaUiForm } from "./tpa/index";
 import { ChatManageForm } from "./chatrank/index";
 import { RunningTextForm, ScoreboardManager, NotesManager } from "./scoreboard/index";
 import { WaypointForm } from "./waypoint/index";
+import { VoicePageAdmin, VoicePageUser } from "./voice/index";
 
 export async function MenuForm(player: Player | any) {
     let form = new ActionFormData();
@@ -21,42 +22,57 @@ export async function MenuForm(player: Player | any) {
     if (isOp) form.button("Pesan Berjalan", "textures/ui/comment");
     form.button("Papan Info", "textures/ui/storageIconColor");
     form.button("Waypoint", "textures/ui/world_glyph_color");
+    form.button("Pengaturan Voice", "textures/ui/sound_glyph_color_2x.png");
     form.show(player).then((result) => {
         if (!result.canceled) {
             if (isOp) {
-                if (result.selection == 0) {
-                    ShopUI(player);
-                }
-                if (result.selection == 1) {
-                    TpaUiForm(player);
-                }
-                if (result.selection == 2) {
-                    ChatManageForm(player);
-                }
-                if (result.selection == 3) {
-                    NotesManager(player);
-                }
-                if (result.selection == 4) {
-                    RunningTextForm(player);
-                }
-                if (result.selection == 5) {
-                    ScoreboardManager(player);
-                }
-                if (result.selection == 6) {
-                    WaypointForm(player);
+                switch (result.selection) {
+                    case 0:
+                        ShopUI(player);
+                        break;
+                    case 1:
+                        TpaUiForm(player);
+                        break;
+                    case 2:
+                        ChatManageForm(player);
+                        break;
+                    case 3:
+                        NotesManager(player);
+                        break;
+                    case 4:
+                        RunningTextForm(player);
+                        break;
+                    case 5:
+                        ScoreboardManager(player);
+                        break;
+                    case 6:
+                        WaypointForm(player);
+                        break;
+                    case 7:
+                        VoicePageAdmin(player);
+                        break;
+                    default:
+                        break;
                 }
             } else {
-                if (result.selection == 0) {
-                    ShopUI(player);
-                }
-                if (result.selection == 1) {
-                    TpaUiForm(player);
-                }
-                if (result.selection == 2) {
-                    ScoreboardManager(player);
-                }
-                if (result.selection == 3) {
-                    WaypointForm(player);
+                switch (result.selection) {
+                    case 0:
+                        ShopUI(player);
+                        break;
+                    case 1:
+                        TpaUiForm(player);
+                        break;
+                    case 2:
+                        ScoreboardManager(player);
+                        break;
+                    case 3:
+                        WaypointForm(player);
+                        break;
+                    case 4:
+                        VoicePageUser(player);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
