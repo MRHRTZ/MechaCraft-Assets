@@ -270,24 +270,24 @@ const isPlayerExist = (nameTag) => {
 
 const getScore = (entity, objective) => {
     try {
-        return world.scoreboard.getObjective(objective).getScore(entity) ?? 0;
+        return world.scoreboard.getObjective(objective)!.getScore(entity) ?? 0;
     } catch (error) {
         return 0;
     }
 };
 
 function setScore(entity, objective, score) {
-    return world.scoreboard.getObjective(objective).setScore(entity, score);
+    return world.scoreboard.getObjective(objective)!.setScore(entity, score);
 }
 
 function addScore(entity, objective, score) {
     let scoreOld = getScore(entity, objective);
-    return world.scoreboard.getObjective(objective).setScore(entity, scoreOld + score);
+    return world.scoreboard.getObjective(objective)!.setScore(entity, scoreOld + score);
 }
 
 function removeScore(entity, objective, score) {
     let scoreOld = getScore(entity, objective);
-    return world.scoreboard.getObjective(objective).setScore(entity, scoreOld - score);
+    return world.scoreboard.getObjective(objective)!.setScore(entity, scoreOld - score);
 }
 
 const shopBodyInfo = (player) => {

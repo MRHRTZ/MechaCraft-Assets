@@ -66,7 +66,7 @@ export function EquipmentsUtilities(player) {
 
 function getScore(entity, objective) {
     try {
-        return world.scoreboard.getObjective(objective).getScore(entity);
+        return world.scoreboard.getObjective(objective)!.getScore(entity);
     } catch (error) {
         return 0;
     }

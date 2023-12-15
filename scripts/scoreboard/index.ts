@@ -85,7 +85,7 @@ export function showScoreboard(player: Player, time: number) {
     let isScoreShow = checkScoreboard(player);
 
     let screenDisplay = `
-           §¶§l§cMecha§aCraft§r
+        §¶§l§cMecha§aCraft§r
 
  §fHari ke   §c: §6${Math.floor(world.getAbsoluteTime() / 24000) + 1}
  §fWaktu     §c: §d${timeToDay(time)}
@@ -104,7 +104,8 @@ ${runningTextGlobal.length > 0 ? "§r§6| §o§f" + runningTextGlobal[0] + "\n "
         runningTextGlobal = runningTextGlobal.slice(1);
     }
 
-    player.onScreenDisplay.setTitle(isScoreShow ? screenDisplay : "");
+    player.runCommandAsync(`title @s actionbar ${isScoreShow ? screenDisplay : ""}`);
+    // player.onScreenDisplay.setTitle(isScoreShow ? screenDisplay : "");
     if (!isScoreShow) player.onScreenDisplay.setTitle("");
 }
 

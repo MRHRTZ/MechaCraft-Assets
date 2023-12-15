@@ -161,7 +161,35 @@ gulp.task("rp", async function () {
     logger.info("Done.");
 });
 
+gulp.task("rp-dev", async function () {
+    update_version();
+    clean_build();
+    create_folder("build");
+    copy_resource_packs();
+
+    let copy_source = "build/MechaAssets/";
+    let copy_target =
+        os.homedir() +
+        "\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\development_resource_packs";
+    copy(copy_source, copy_target);
+    logger.info("Done.");
+});
+
 gulp.task("bp-dev", async function () {
+    update_version();
+    clean_build();
+    create_folder("build");
+    copy_behavior_packs();
+    compile_scripts();
+    let copy_source = "build/MechaAssets/";
+    let copy_target =
+        os.homedir() +
+        "\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\development_behavior_packs";
+    copy(copy_source, copy_target);
+    logger.info("Done.");
+});
+
+gulp.task("bp-serv", async function () {
     update_version();
     clean_build();
     create_folder("build");

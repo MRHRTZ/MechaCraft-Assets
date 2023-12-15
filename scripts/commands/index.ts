@@ -16,6 +16,7 @@ ${cmd ? `§o§cGagal ekseskusi perintah §b${cmd}§r\n` : ""}
 §6.tpadeny <username> §c- §o§eTolak permintaan teleport§r`;
 }
 
+export const prefix = "!";
 export const commands = async (msg: ChatSendBeforeEvent) => {
     var player = msg.sender;
     try {
@@ -23,10 +24,10 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
         const args = msg.message.split(/ +/g);
 
         switch (cmd) {
-            case ".help":
+            case prefix + "help":
                 player.runCommandAsync(`tellraw @s {"rawtext":[{"text":"${showHelp(null)}"}]}`);
                 break;
-            case ".eval":
+            case prefix + "eval":
                 const isOp =
                     player.isOp() ||
                     player.hasTag("paradoxOpped") ||
@@ -40,25 +41,25 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                     player.sendMessage(viewObj(error));
                 }
                 break;
-            case ".menu":
+            case prefix + "menu":
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§bBerhasil memberikan Menu GUI"}]}`
                 );
                 player.runCommandAsync("give @s ms:menu_ui");
                 break;
-            case ".lca":
+            case prefix + "lca":
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§bBerhasil memberikan Land Claim GUI"}]}`
                 );
                 player.runCommandAsync("give @s ms:lca_ui");
                 break;
-            case ".shop":
+            case prefix + "shop":
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§bBerhasil memberikan Shop GUI"}]}`
                 );
                 player.runCommandAsync("give @s ms:shop_ui");
                 break;
-            case ".vshop":
+            case prefix + "vshop":
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§evshop untuk sementara tidak bisa digunakan."}]}`
                 );
@@ -67,13 +68,13 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                 // );
                 // player.addTag("shop_ui");
                 break;
-            case ".tpa":
+            case prefix + "tpa":
                 player.runCommandAsync(
                     `tellraw @s {"rawtext":[{"text":"§l§6[MECHA] §r§bBerhasil memberikan TPA GUI"}]}`
                 );
                 player.runCommandAsync("give @s ms:tpa_ui");
                 break;
-            case ".tparequest":
+            case prefix + "tparequest":
                 if (args.length < 2)
                     return player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"\n§l§bPenggunaan : \n§r§6.tparequest username"}]}`
@@ -93,7 +94,7 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                     );
                 }
                 break;
-            case ".tpaaccept":
+            case prefix + "tpaaccept":
                 if (args.length < 2)
                     return player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"\n§l§bPenggunaan : \n§r§6.tpadeny username"}]}`
@@ -116,7 +117,7 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                     player.removeTag("tpa:" + args.slice(1).join("_"));
                 }
                 break;
-            case ".tpadeny":
+            case prefix + "tpadeny":
                 if (args.length < 2)
                     return player.runCommandAsync(
                         `tellraw @s {"rawtext":[{"text":"\n§l§bPenggunaan : \n§r§6.tpadeny username"}]}`
@@ -139,7 +140,7 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                 }
                 break;
             default:
-                if (cmd.startsWith(".")) {
+                if (cmd.startsWith(prefix)) {
                     player.runCommandAsync(`tellraw @s {"rawtext":[{"text":"${showHelp(cmd)}"}]}`);
                 }
                 break;
