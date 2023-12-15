@@ -413,6 +413,10 @@ function showErrorToOP(e: Error | any) {
     }
 }
 
+function isEmptyOrSpaces(str) {
+    return !str || str.match(/^ *$/) !== null;
+}
+
 export {
     Notes,
     viewObj,
@@ -439,4 +443,5 @@ export {
     getTimeNow,
     getDateNow,
     showErrorToOP,
+    isEmptyOrSpaces,
 };
