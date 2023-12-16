@@ -49,7 +49,7 @@ export function TpaUiForm(player: Player | any) {
 
 export function TpaUI(player: Player | any, fromPlayer) {
     let fromPlayerName = fromPlayer.replace(/_/g, " ");
-    if (player.hasTag("paradoxOpped")) {
+    if (player.hasTag("admin")) {
         player.sendMessage(fromPlayer + " Meminta TP ke " + player.nameTag);
     }
     new MessageFormData()
