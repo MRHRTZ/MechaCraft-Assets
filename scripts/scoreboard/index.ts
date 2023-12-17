@@ -81,7 +81,6 @@ export function ScoreboardManager(player) {
 }
 
 export function showScoreboard(player: Player, time: number) {
-    let money = getScore(player, "money");
     let isScoreShow = checkScoreboard(player);
 
     let screenDisplay = `
@@ -90,7 +89,6 @@ export function showScoreboard(player: Player, time: number) {
  §fHari ke   §c: §6${Math.floor(world.getAbsoluteTime() / 24000) + 1}
  §fWaktu     §c: §d${timeToDay(time)}
  §fNama      §c: §e${player.nameTag}
- §fUang      §c: §a${money}
  §fKoor      §c: §7${Object.values(player.location)
      .map((v) => Math.ceil(v))
      .join(" ")}
@@ -127,13 +125,15 @@ export function messageInfo(player: Player) {
 export async function giftPlayer(player: Player) {
     let randomAmount = Math.floor(Math.random() * 200) + 50;
     addScore(player, "money", randomAmount);
-    player.sendMessage(`§r§l§c[§bGIFT§c]§r §cSelamat Pagi §aKamu mendapatkan §eUang §asebesar §e${randomAmount}`);
+    player.sendMessage(`§r§l§c[§bGIFT§c]§r §6Selamat Pagi! §aKamu mendapatkan uang sebanyak §e${randomAmount}`);
     player.playSound("random.toast");
 }
 
 export function NotesManager(player) {
     try {
-        let textmgr = new ModalFormData().title(`§l§aNotes §cmanager`).textField(`§6Masukan teks`, "Teks...");
+        let textmgr = new ModalFormData()
+            .title(`§l§aNotes §cmanager`)
+            .textField(`§6Masukan teks`, "Teks...", note.get() ?? "");
         textmgr.show(player).then(async (res) => {
             let text = res.formValues![0] as string;
             note.set(text);

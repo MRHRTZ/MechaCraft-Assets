@@ -6,13 +6,13 @@
     ],
     "all_version": [
         1,
-        4,
-        24
+        10,
+        25
     ],
     "bp": {
-        "uuid": "1032618d-3574-49bd-8f6d-0addf7a32113"
+        "uuid": "d08d83d4-703b-43ae-8543-62d0e8299997"
     },
     "rp": {
-        "uuid": "9a980c94-00d2-4c57-aa82-a7cf16fcbdf2"
+        "uuid": "2bf7eb05-d877-4cde-9650-df418e866d7f"
     }
 }

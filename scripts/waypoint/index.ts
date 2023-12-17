@@ -1,90 +1,12 @@
 import { world, Player } from "@minecraft/server";
-import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
+import { ActionFormData, ModalFormData, MessageFormData, FormCancelationReason } from "@minecraft/server-ui";
 
-import { viewObj } from "../libs/utils";
+import { showErrorToOP, viewObj } from "../libs/utils";
+import MechAPI from "../libs/mechapi";
 
 // Functions
-export function addWaypoint(player, name) {
-    let coor = Object.values(player.location)
-        .map((v: any) => Math.ceil(v))
-        .join(" ");
-    let dimension = player.dimension.id.replace("minecraft:", "");
-    player.addTag(`waypoint:${coor}|${dimension}|${name}`);
-    return coor;
-}
-
-export function listWaypoint(player: Player) {
-    let waypointList: any = [];
-    // Self Waypoints
-    if (player.getTags().join("|").includes("waypoint:")) {
-        const waypoints = player.getTags().filter((v) => v.includes("waypoint:"));
-        for (const waypoint of waypoints) {
-            const waypointObj = waypoint.replace("waypoint:", "").split("|");
-            let coor = waypointObj[0];
-            let dimension = waypointObj[1];
-            let name = waypointObj[2];
-            let wpObj = {
-                coor: coor,
-                dimension: dimension,
-                name: name,
-            };
-            waypointList.push(wpObj);
-        }
-    }
-    // Other waypoints if available and can be read
-    for (let otherPlayer of world.getPlayers()) {
-        if (
-            otherPlayer.getTags().join("|").includes("waypoint_global") &&
-            otherPlayer.getTags().join("|").includes("waypoint:")
-        ) {
-            const waypoints = player.getTags().filter((v) => v.includes("waypoint:"));
-            for (const waypoint of waypoints) {
-                const waypointObj = waypoint.replace("waypoint:", "").split("|");
-                let coor = waypointObj[0];
-                let dimension = waypointObj[1];
-                let name = waypointObj[2];
-                let wpObj = {
-                    owner: otherPlayer.nameTag,
-                    coor: coor,
-                    dimension: dimension,
-                    name: name,
-                };
-                waypointList.push(wpObj);
-            }
-        }
-    }
-    return waypointList;
-}
-
-export function deleteWaypoint(player, wpName) {
-    if (player.getTags().join("|").includes("waypoint:")) {
-        const waypoints = player.getTags().filter((v) => v.includes("waypoint:"));
-        for (const waypoint of waypoints) {
-            const waypointObj = waypoint.replace("waypoint:", "").split("|");
-            let coor = waypointObj[0];
-            let dimension = waypointObj[1];
-            let name = waypointObj[2];
-            if (wpName.toLowerCase() == name.toLowerCase()) {
-                player.removeTag(`waypoint:${coor}|${dimension}|${name}`);
-                return true;
-            }
-        }
-        return false;
-    } else {
-        return false;
-    }
-}
-
-export function getViewerWaypoint(player) {
-    return player.getTags().join("|").includes("waypoint_global");
-}
-
-export function setViewerWaypoint(player, viewAsPublic) {
-    if (viewAsPublic) {
-        if (!player.getTags().join("|").includes("waypoint_global")) player.addTag("waypoint_global");
-    } else {
-        if (player.getTags().join("|").includes("waypoint_global")) player.removeTag("waypoint_global");
-    }
+export async function addWaypoint(player: Player, name: string, isPublic: boolean) {
+    return await MechAPI.addWaypoint(player, name, isPublic);
 }
 
 // Forms
@@ -92,108 +14,191 @@ export function WaypointForm(player) {
     let form = new ActionFormData();
     form.title(`§l§cMecha §2Waypoint`);
     form.body(`§6Teleportasi cepat menggunakan waypoint`);
-    form.button("Pergi ke Waypoint", "textures/ui/warning_alex");
     form.button("Tambah Waypoint", "textures/ui/village_hero_effect");
-    form.button("Hapus Waypoint", "textures/ui/redX1");
-    form.button("Pengaturan Waypoint", "textures/ui/settings_glyph_color_2x");
+    form.button("Waypoint Saya", "textures/ui/warning_alex");
+    form.button("Waypoint Publik", "textures/ui/world_glyph_color_2x.png");
     form.show(player).then((result) => {
         if (!result.canceled) {
-            if (result.selection == 0) WaypointSection(player);
-            if (result.selection == 1) WaypointAddForm(player);
-            if (result.selection == 2) WaypointDeleteForm(player);
-            if (result.selection == 3) WaypointSettings(player);
+            if (result.selection == 0) WaypointAddForm(player);
+            if (result.selection == 1) WaypointSection(player);
+            if (result.selection == 2) WaypointPublic(player);
         }
     });
 }
 
-export function WaypointAddForm(player) {
-    let form = new ModalFormData().title(`Tambah Waypoint`).textField(`§6Nama Waypoint:`, "Input Text");
-    form.show(player).then((result) => {
+export function WaypointAddForm(player: Player) {
+    let form = new ModalFormData()
+        .title(`Tambah Waypoint`)
+        .textField(`§6Nama Waypoint:`, "Masukan nama ...")
+        .toggle(`§6Set untuk publik`, true);
+    form.show(player).then(async (result) => {
         if (!result.canceled) {
-            let wpname = result.formValues![0];
-            let coor = addWaypoint(player, wpname);
-            player.runCommandAsync(
-                `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §aBerhasil menambah waypoint §c${wpname} §apada §e${coor}"}]}`
-            );
-            player.playSound("random.toast");
-        }
-    });
-}
-
-export function WaypointDeleteForm(player) {
-    try {
-        let waypoints = listWaypoint(player);
-        if (waypoints.length > 0) {
-            let form = new ActionFormData();
-            form.title(`§l§cHapus §2Waypoint`);
-            form.body(`§bPilih Waypoint yang akan dihapus`);
-            for (let wpObj of waypoints) {
-                if (!wpObj.owner) form.button(`${wpObj.name}\n${wpObj.coor}`);
+            const [name, is_public] = result.formValues!;
+            let resp = await addWaypoint(player, name as string, is_public as boolean);
+            if (resp.status) {
+                player.sendMessage(
+                    `§r§l§e[§bWAYPOINT§e]§r §aBerhasil menambah waypoint §c${name} §apada §e${resp.message}`
+                );
+                player.playSound("random.toast");
+            } else {
+                player.sendMessage(`§r§l§e[§bWAYPOINT§e]§r §c${resp.message}`);
+                player.playSound("note.bass");
             }
-            form.show(player).then((result) => {
-                if (!result.canceled) {
-                    let wayObj = waypoints[result.selection!];
-                    deleteWaypoint(player, wayObj.name);
-                    player.runCommandAsync(
-                        `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §aBerhasil menghapus waypoint §c${wayObj.name}"}]}`
-                    );
-                    player.runCommandAsync("playsound random.toast @s");
-                }
-            });
-        } else {
-            player.runCommandAsync("playsound note.bass @s");
-            player.runCommandAsync(
-                `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §cMaaf, Waypoint belum tersedia, silahkan tambah terlebih dahulu."}]}`
-            );
         }
-    } catch (error) {
-        player.sendMessage(viewObj(error));
-    }
+    });
 }
 
-export function WaypointSettings(player) {
-    let currentViewer = getViewerWaypoint(player);
+export function WaypointPublicSettings(player: Player, waypointId: number, currentSetting: boolean) {
     let form = new ModalFormData();
     form.title(`§l§cPengaturan §2Waypoint`);
-    form.toggle("§6Perlihatkan waypoint saya oleh §f(§aHanya Saya§f/§cSemua§f)", currentViewer);
+    form.toggle("§6Perlihatkan waypoint saya oleh §f(§aHanya Saya§f/§cSemua§f)", currentSetting);
     form.show(player).then(async (result) => {
         if (!result.canceled) {
             let aksesWp = result.formValues![0];
-            setViewerWaypoint(player, aksesWp);
-            player.sendMessage(
-                `§r§l§e[§bWAYPOINT§e]§r §eWaypoint di set untuk ${aksesWp ? "§cSemua" : "§aHanya Saya"}`
-            );
-            player.playSound("random.toast");
+            const resp = await MechAPI.changePublicWaypoint(player, waypointId, aksesWp as boolean);
+            if (resp.status) {
+                player.sendMessage(
+                    `§r§l§e[§bWAYPOINT§e]§r §eWaypoint di set untuk ${aksesWp ? "§cSemua" : "§aHanya Saya"}`
+                );
+                player.playSound("random.toast");
+            } else {
+                player.sendMessage(`§r§l§e[§bWAYPOINT§e]§r §c${resp.message}`);
+                player.playSound("note.bass");
+            }
         }
     });
 }
 
-export function WaypointSection(player) {
-    try {
-        let waypoints = listWaypoint(player);
-        if (waypoints.length > 0) {
-            let form = new ActionFormData();
-            form.title(`§l§cMecha §2Waypoint`);
-            form.body(`§bPilih Teleportasi Waypoint`);
-            for (let wpObj of waypoints) {
-                form.button(`${wpObj.name} ${wpObj.owner ? `(${wpObj.owner})` : `(Kamu)`}\n${wpObj.coor}`);
+export function WaypointDelete(player: Player, waypointId: number, waypointName: string) {
+    new MessageFormData()
+        .title(`§l§1Waypoint Delete`)
+        .body(`§rApakah kamu yakin ingin menghapus waypoint §c§l${waypointName}§r?`)
+        .button1("§l§cTidak!")
+        .button2("§l§2Ya.")
+        .show(player)
+        .then(async (result) => {
+            if (result.canceled || !result.selection) {
+                return;
             }
-            form.show(player).then(async (result) => {
-                if (!result.canceled) {
-                    let wayObj = waypoints[result.selection!];
-                    player.runCommandAsync(`execute in ${wayObj.dimension} run tp @s ${wayObj.coor}`);
-                    player.runCommandAsync(
-                        `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §aKamu telah diteleportasi ke §c${wayObj.name}"}]}`
-                    );
+
+            const resp = await MechAPI.deleteWaypoint(player, waypointId);
+            if (resp.status) {
+                player.sendMessage("§r§l§e[§bWAYPOINT§e]§r §aWaypoint Berhasil dihapus");
+                player.playSound("random.toast");
+            } else {
+                player.sendMessage(`§r§l§e[§bWAYPOINT§e]§r §c${resp.message}`);
+                player.playSound("note.bass");
+            }
+        });
+}
+
+export async function WaypointPublic(player: Player) {
+    try {
+        let resp = await MechAPI.publicWaypoint(player);
+        if (resp.status) {
+            const waypoints = resp.result;
+            if (waypoints.length > 0) {
+                let form = new ActionFormData();
+                form.title(`§l§cMecha §2Public Waypoint`);
+                form.body(`§bPilih Teleportasi Waypoint`);
+                for (let wpObj of waypoints) {
+                    var x = Math.round(wpObj.x);
+                    var y = Math.round(wpObj.y);
+                    var z = Math.round(wpObj.z);
+                    form.button(`§9${wpObj.name}§7 (§2${wpObj.User.name}§7)\n§l§6${x} ${y} ${z}`);
                 }
-            });
+                form.show(player).then(async (result) => {
+                    if (!result.canceled) {
+                        let wayObj = waypoints[result.selection!];
+                        var x = Math.round(wayObj.x);
+                        var y = Math.round(wayObj.y);
+                        var z = Math.round(wayObj.z);
+                        player.runCommandAsync(`execute in ${wayObj.dimension} run tp @s ${x} ${y} ${z}`);
+                        player.runCommandAsync(
+                            `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §aKamu telah diteleportasi ke §c${wayObj.name}"}]}`
+                        );
+                    }
+                });
+            } else {
+                player.runCommandAsync("playsound note.bass @s");
+                player.runCommandAsync(
+                    `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §cMaaf, Waypoint belum tersedia, silahkan tambah terlebih dahulu."}]}`
+                );
+            }
         } else {
-            player.runCommandAsync("playsound note.bass @s");
-            player.runCommandAsync(
-                `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §cMaaf, Waypoint belum tersedia, silahkan tambah terlebih dahulu."}]}`
-            );
+            player.sendMessage(`§r§l§e[§bWAYPOINT§e]§r §c${resp.message}`);
+            player.playSound("note.bass");
         }
     } catch (error) {
-        player.sendMessage(viewObj(error));
+        showErrorToOP("Waypoint Error: " + viewObj(error));
+        player.sendMessage("§r§l§e[§bWAYPOINT§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
+    }
+}
+
+export async function WaypointSection(player: Player) {
+    try {
+        let resp = await MechAPI.selfWaypoint(player);
+        if (resp.status) {
+            const waypoints = resp.result;
+            if (waypoints.length > 0) {
+                let form = new ActionFormData();
+                form.title(`§l§cMy §2Waypoint`);
+                form.body(`§bPilih Teleportasi Waypoint`);
+                for (let wpObj of waypoints) {
+                    var x = Math.round(wpObj.x);
+                    var y = Math.round(wpObj.y);
+                    var z = Math.round(wpObj.z);
+                    form.button(`§9${wpObj.name}\n§l§6${x} ${y} ${z}`);
+                }
+                form.show(player).then(async (result) => {
+                    if (!result.canceled) {
+                        let wayObj = waypoints[result.selection!];
+                        var x = Math.round(wayObj.x);
+                        var y = Math.round(wayObj.y);
+                        var z = Math.round(wayObj.z);
+
+                        new ActionFormData()
+                            .title(`§l§cWaypoint §2` + wayObj.name)
+                            .body(`§aNama §c: §r${wayObj.name}\n§aCoor §c: ${x} ${y} ${z}`)
+                            .button("§2Teleportasi")
+                            .button("§6Ubah Publik")
+                            .button("§4Hapus")
+                            .show(player)
+                            .then((result) => {
+                                if (result.canceled) return;
+                                switch (result.selection) {
+                                    case 0:
+                                        player.runCommandAsync(
+                                            `execute in ${wayObj.dimension} run tp @s ${x} ${y} ${z}`
+                                        );
+                                        player.runCommandAsync(
+                                            `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §aKamu telah diteleportasi ke §c${wayObj.name}"}]}`
+                                        );
+                                        break;
+                                    case 1:
+                                        WaypointPublicSettings(player, wayObj.id, wayObj.isPublic);
+                                        break;
+                                    case 2:
+                                        WaypointDelete(player, wayObj.id, wayObj.name);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            });
+                    }
+                });
+            } else {
+                player.runCommandAsync("playsound note.bass @s");
+                player.runCommandAsync(
+                    `tellraw @s {"rawtext":[{"text":"§r§l§e[§bWAYPOINT§e]§r §cMaaf, Waypoint belum tersedia, silahkan tambah terlebih dahulu."}]}`
+                );
+            }
+        } else {
+            player.sendMessage(`§r§l§e[§bWAYPOINT§e]§r §c${resp.message}`);
+            player.playSound("note.bass");
+        }
+    } catch (error) {
+        showErrorToOP("Waypoint Error: " + viewObj(error));
+        player.sendMessage("§r§l§e[§bWAYPOINT§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
     }
 }

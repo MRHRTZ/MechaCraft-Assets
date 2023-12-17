@@ -244,7 +244,7 @@ gulp.task("bp-dev", async function () {
 
 // === SERVER BUILD
 
-const serverDir = "E:\\Data\\Games\\Minecraft\\VoiceCraft Test\\Mc Server";
+const serverDir = "E:\\Data\\Games\\Minecraft\\MechaCraft\\MechaServer";
 const worldDir = "\\worlds\\VoiceCraft";
 
 gulp.task("server", async function () {

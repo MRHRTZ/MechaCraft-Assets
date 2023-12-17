@@ -1,8 +1,8 @@
 import { world, ChatSendBeforeEvent } from "@minecraft/server";
 import { viewObj, isPlayerExist, getPlayer, showErrorToOP, print } from "../libs/utils";
-import { getRequest, postRequest } from "../libs/net-utils";
+import MechaAPI from "../libs/mechapi";
 // import * as rank from "../chatrank/index";
-
+MechaAPI;
 export function showHelp(cmd: any) {
     return `
 ${cmd ? `§o§cGagal ekseskusi perintah §b${cmd}§r\n` : ""}
@@ -23,8 +23,7 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
     try {
         const cmd = msg.message.toLowerCase().split(/ +/g)[0] || "";
         const args = msg.message.split(/ +/g);
-        const isOp =
-            player.isOp() || player.hasTag("paradoxOpped") || player.hasTag("admin") || player.hasTag("worldedit");
+        const isOp = player.isOp() || player.hasTag("admin") || player.hasTag("admin") || player.hasTag("worldedit");
 
         switch (cmd) {
             case prefix + "help":
@@ -144,6 +143,7 @@ export const commands = async (msg: ChatSendBeforeEvent) => {
                 break;
         }
     } catch (error) {
-        showErrorToOP(error);
+        showErrorToOP("Command Error: " + viewObj(error));
+        player.sendMessage("§r§l§e[§bMECHA§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
     }
 };

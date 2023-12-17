@@ -1,7 +1,14 @@
 import { Player, world } from "@minecraft/server";
 import { faktaText } from "./fakta";
+import { checkRole } from "../chatrole/index";
+import MechAPI from "./mechapi";
+import { MechaPlayer, Spread } from "./types";
 
-class Notes {
+export function merge<A extends object[]>(...a: [...A]) {
+    return Object.assign({}, ...a) as Spread<A>;
+}
+
+export class Notes {
     note = "";
     constructor(note: string) {
         this.note = note;
@@ -14,7 +21,7 @@ class Notes {
     }
 }
 
-const viewObj = (() => {
+export const viewObj = (() => {
     const AsyncFunction = (async () => {}).constructor,
         GeneratorFunction = function* () {}.constructor,
         AsyncGeneratorFunction = async function* () {}.constructor,
@@ -208,7 +215,7 @@ const viewObj = (() => {
     return (o, tab = " §8:§r ", tabSeparator = " ") => exec(o, [], tab, 0, tabSeparator);
 })();
 
-const capitalizeLetter = (str) => {
+export const capitalizeLetter = (str) => {
     const arr = str.split(" ");
     for (var i = 0; i < arr.length; i++) {
         arr[i] = arr[i].charAt(0).toUpperCase() + arr[i].slice(1);
@@ -216,12 +223,12 @@ const capitalizeLetter = (str) => {
     return arr.join(" ");
 };
 
-const letter2Id = (str) => {
+export const letter2Id = (str) => {
     return "minecraft:" + str.toLowerCase().replace(/ /g, "_");
 };
 
-const getInventory = (nameTag, itemIdOnly = false) => {
-    let container = getPlayer(nameTag)?.getComponent("inventory").container;
+export const getInventory = (name: string, itemIdOnly = false) => {
+    let container = getPlayerByName(name)?.getComponent("inventory").container;
     let inventory = [
         ...Array.from(Array(container.size), (_a, i) => {
             const item = container.getItem(i);
@@ -239,7 +246,37 @@ const getInventory = (nameTag, itemIdOnly = false) => {
     return inventory;
 };
 
-const getPlayer = (nameTag) => {
+export const getPlayerInventory = (player: Player) => {
+    let container = player.getComponent("inventory")!.container;
+    let inventory = [
+        ...Array.from(Array(container?.size), (_a, i) => {
+            const item = container?.getItem(i);
+            if (item) return item;
+        }),
+    ].filter((v) => v != undefined);
+    return inventory;
+};
+
+export const getPlayersRole = (roles: string[]) => {
+    let player: Player[] | any[] = [];
+    for (let worldPlayer of world.getAllPlayers()) {
+        const worldPlayerRole = checkRole(worldPlayer);
+        if (worldPlayer.hasTag("role:" + worldPlayerRole)) {
+            if (roles.includes(worldPlayerRole)) player.push(worldPlayer);
+        }
+    }
+    return player;
+};
+
+export const getPlayerByName = (name: string): Player | any => {
+    let player: Player | any = null;
+    for (let playerW of world.getAllPlayers()) {
+        if (playerW.name == name) player = playerW;
+    }
+    return player;
+};
+
+export const getPlayer = (nameTag) => {
     let players: any = null;
     for (let player of world.getAllPlayers()) {
         if (player.nameTag == nameTag) players = player;
@@ -247,7 +284,7 @@ const getPlayer = (nameTag) => {
     return players;
 };
 
-const getPlayers = (onlyNameTag = false) => {
+export const getPlayers = (onlyNameTag = false) => {
     let players: any = [];
     for (let player of world.getAllPlayers()) {
         if (onlyNameTag) {
@@ -259,7 +296,64 @@ const getPlayers = (onlyNameTag = false) => {
     return players;
 };
 
-const isPlayerExist = (nameTag) => {
+export const getServerPlayer = async (player: Player): Promise<MechaPlayer> => {
+    let mecha: MechaPlayer = { id: "", name: "", role: "", guildId: 0, money: 0, canTpa: false };
+    let resp = await MechAPI.getUser(player);
+    if (!resp.status) {
+        player.sendMessage(`§r§l§e[§bTPA§e]§r §c${resp.message}`);
+        player.playSound("note.bass");
+        return mecha;
+    }
+    const serverPlayers = resp.result;
+    mecha = {
+        id: serverPlayers.id,
+        name: serverPlayers.name,
+        role: serverPlayers.role,
+        guildId: serverPlayers.guildId,
+        money: serverPlayers.money,
+        canTpa: serverPlayers.canTpa,
+    };
+    return mecha;
+};
+
+export const getActivePlayers = async (
+    player: Player
+): Promise<{
+    player: Player[];
+    mecha: MechaPlayer[];
+}> => {
+    let players: {
+        player: Player[];
+        mecha: MechaPlayer[];
+    } = {
+        player: [],
+        mecha: [],
+    };
+    let resp = await MechAPI.getUsers(player);
+    if (!resp.status) {
+        player.sendMessage(`§r§l§e[§bTPA§e]§r §c${resp.message}`);
+        player.playSound("note.bass");
+        return players;
+    }
+    for (let activePlayer of world.getAllPlayers()) {
+        for (let serverPlayers of resp.result) {
+            if (activePlayer.id == serverPlayers.xuid) {
+                players.player.push(activePlayer);
+                players.mecha.push({
+                    id: serverPlayers.id,
+                    name: serverPlayers.name,
+                    role: serverPlayers.role,
+                    guildId: serverPlayers.guildId,
+                    money: serverPlayers.money,
+                    canTpa: serverPlayers.canTpa,
+                });
+            }
+        }
+    }
+    return players;
+};
+
+export const isPlayerExist = (nameTag) => {
     let players: any = [];
     for (let player of world.getAllPlayers()) {
         players.push(player.nameTag);
@@ -268,7 +362,7 @@ const isPlayerExist = (nameTag) => {
     return players.includes(nameTag);
 };
 
-const getScore = (entity, objective) => {
+export const getScore = (entity, objective) => {
     try {
         return world.scoreboard.getObjective(objective)!.getScore(entity) ?? 0;
     } catch (error) {
@@ -276,28 +370,37 @@ const getScore = (entity, objective) => {
     }
 };
 
-function setScore(entity, objective, score) {
+export function setScore(entity, objective, score) {
     return world.scoreboard.getObjective(objective)!.setScore(entity, score);
 }
 
-function addScore(entity, objective, score) {
+export function addScore(entity, objective, score) {
     let scoreOld = getScore(entity, objective);
     return world.scoreboard.getObjective(objective)!.setScore(entity, scoreOld + score);
 }
 
-function removeScore(entity, objective, score) {
+export function removeScore(entity, objective, score) {
     let scoreOld = getScore(entity, objective);
     return world.scoreboard.getObjective(objective)!.setScore(entity, scoreOld - score);
 }
 
-const shopBodyInfo = (player) => {
+export const shopBodyInfo = (player) => {
     return `§b------ §6[ Informasi Pemain ] §b------\n\n§fNama§c: §a${player.nameTag}\n§fUang§c: §a${getScore(
         player,
         "money"
     )}\n\n§b-------------------------------`;
 };
 
-const colorOptions = [
+export const isPlayerAdmin = (player: Player): boolean => {
+    return (
+        player.hasTag("role:OPERATOR") ||
+        player.hasTag("role:MODERATOR") ||
+        player.hasTag("role:BUILDER") ||
+        player.hasTag("role:STAFF")
+    );
+};
+
+export const colorOptions = [
     "§0Black",
     "§1Dark Blue",
     "§2Dark Green",
@@ -316,7 +419,7 @@ const colorOptions = [
     "§fWhite",
 ];
 
-const formatOptions = [
+export const formatOptions = [
     "§rPlain",
     "§kObfuscated",
     "§lBold",
@@ -325,8 +428,8 @@ const formatOptions = [
     "§oItalic",
 ];
 
-const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
-const bulan = [
+export const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu"];
+export const bulan = [
     "Januari",
     "Februari",
     "Maret",
@@ -341,7 +444,7 @@ const bulan = [
     "Desember",
 ];
 
-function msToTime(s) {
+export function msToTime(s) {
     var ms = s % 1000;
     s = (s - ms) / 1000;
     var secs = s % 60;
@@ -352,7 +455,7 @@ function msToTime(s) {
     return [hrs, mins, secs, ms];
 }
 
-function timeToDay(gametime) {
+export function timeToDay(gametime) {
     let gameday = {
         Day: 1000,
         Noon: 6000,
@@ -379,74 +482,53 @@ function timeToDay(gametime) {
     }
 }
 
-function getRandomFakta() {
+export function getRandomFakta() {
     return faktaText[Math.floor(Math.random() * faktaText.length)];
 }
 
-function getRandomColor() {
+export function getRandomColor() {
     let colors = ["§a", "§b", "§2", "§f"];
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
-function getRawDateNow(gmtOffset = 7) {
+export function getRawDateNow(gmtOffset = 7) {
     // Indonesia date format
     var now = new Date();
     return new Date(now.setUTCHours(now.getHours() + gmtOffset));
 }
 
-function getTimeNow(date) {
+export function getTimeNow(date) {
     return `${date.getHours().toString().padStart(2, 0)}:${date.getMinutes().toString().padStart(2, 0)}:${date
         .getSeconds()
         .toString()
         .padStart(2, 0)}`;
 }
 
-function getDateNow(date) {
+export function getDateNow(date) {
     return `${date.getDate().toString().padStart(2, 0)} ${bulan[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-function print(player: Player, message: any) {
+export function print(player: Player, message: any) {
     player.runCommandAsync(`tellraw @s {"rawtext":[{"text":"${message}"}]}`);
 }
 
-function showErrorToOP(e: Error | any) {
+export function showErrorToOP(e: Error | any) {
     for (let player of world.getPlayers()) {
-        if (player.isOp() || player.hasTag("admin")) {
-            player.sendMessage("Error: " + viewObj(e));
+        if (checkRole(player) == "OPERATOR") {
+            player.sendMessage("Error: " + String(e));
         }
     }
 }
 
-function isEmptyOrSpaces(str) {
+export function isEmptyOrSpaces(str) {
     return !str || str.match(/^ *$/) !== null;
 }
 
-export {
-    Notes,
-    viewObj,
-    isPlayerExist,
-    getPlayer,
-    getInventory,
-    capitalizeLetter,
-    letter2Id,
-    getPlayers,
-    getScore,
-    setScore,
-    addScore,
-    removeScore,
-    shopBodyInfo,
-    msToTime,
-    timeToDay,
-    colorOptions,
-    formatOptions,
-    hari,
-    bulan,
-    getRandomColor,
-    getRandomFakta,
-    getRawDateNow,
-    getTimeNow,
-    getDateNow,
-    showErrorToOP,
-    print,
-    isEmptyOrSpaces,
-};
+export function serialize(obj: any = {}) {
+    var str: any = [];
+    for (var p in obj)
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+    return str.join("&");
+}

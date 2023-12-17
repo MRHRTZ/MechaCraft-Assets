@@ -159,7 +159,8 @@ function autoConnectSettings(player: Player) {
 
                 player.sendMessage("§2Berhasil menyimpan pengaturan koneksi otomatis server!");
             } catch (ex) {
-                player.sendMessage(viewObj(ex));
+                showErrorToOP("Voice AutoConnect Settings Error: " + viewObj(ex));
+                player.sendMessage("§r§l§e[§bMECHA§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
             }
         });
 }
