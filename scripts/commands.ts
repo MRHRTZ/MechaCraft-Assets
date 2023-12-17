@@ -1,6 +1,6 @@
 import { world, ChatSendBeforeEvent } from "@minecraft/server";
-import { viewObj, isPlayerExist, getPlayer, showErrorToOP, print } from "../libs/utils";
-import MechaAPI from "../libs/mechapi";
+import { viewObj, isPlayerExist, getPlayer, showErrorToOP, print } from "./libs/utils";
+import MechaAPI from "./libs/mechapi";
 // import * as rank from "../chatrank/index";
 MechaAPI;
 export function showHelp(cmd: any) {

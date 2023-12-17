@@ -1,7 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import { isEmptyOrSpaces, showErrorToOP, viewObj } from "../libs/utils";
-import { Network } from "../libs/voice-net";
+import { isEmptyOrSpaces, showErrorToOP, viewObj } from "./libs/utils";
+import { Network } from "./libs/voice-net";
 
 export function VoicePageAdmin(player: Player) {
     const bodyText = `§bStatus Server: ${Network.IsConnected ? "§aTersambung" : "§cNonaktif"} 
@@ -87,7 +87,7 @@ function clientSettings(player: Player) {
             const [Key] = results.formValues!;
 
             if (isEmptyOrSpaces(Key)) {
-                player.sendMessage("§cGagal. Kunci tidak boleh kosong!");
+                player.sendMessage("§r§l§e[§bVOICE§e]§r §cGagal. Kunci tidak boleh kosong!");
                 return;
             }
 
@@ -97,9 +97,9 @@ function clientSettings(player: Player) {
                     player.removeTag(`voice_key:${row_key.replace("voice_key:", "")}`);
                 }
                 player.addTag(`voice_key:${Key}`);
-                player.sendMessage("§2Berhasil menyimpan kunci client!");
+                player.sendMessage("§r§l§e[§bVOICE§e]§r §2Berhasil menyimpan kunci client!");
             } catch (ex) {
-                player.sendMessage("§cGagal menyimpan kunci client!");
+                player.sendMessage("§r§l§e[§bVOICE§e]§r §cGagal menyimpan kunci client!");
                 showErrorToOP(viewObj(ex));
             }
         });
@@ -121,7 +121,7 @@ function internalSettings(player: Player) {
             world.setDynamicProperty("textProximityChat", TPC);
             world.setDynamicProperty("textProximityDistance", TPCD);
 
-            player.sendMessage("§2Berhasil menyimpan pengaturan internal server!");
+            player.sendMessage("§r§l§e[§bVOICE§e]§r §2Berhasil menyimpan pengaturan internal server!");
         });
 }
 
@@ -148,7 +148,9 @@ function autoConnectSettings(player: Player) {
             const portNum = Number.parseInt(Port as string);
 
             if (isEmptyOrSpaces(IP) || isEmptyOrSpaces(Key) || isNaN(portNum) || portNum < 1025 || portNum > 65535) {
-                player.sendMessage("§cGagal. IP atau Kunci tidak boleh kosong! Nomor Port harus diantara 1025-65535");
+                player.sendMessage(
+                    "§r§l§e[§bVOICE§e]§r §cGagal. IP atau Kunci tidak boleh kosong! Nomor Port harus diantara 1025-65535"
+                );
                 return;
             }
 
@@ -157,10 +159,10 @@ function autoConnectSettings(player: Player) {
                 world.setDynamicProperty("autoConnectPort", portNum);
                 world.setDynamicProperty("autoConnectServerKey", Key);
 
-                player.sendMessage("§2Berhasil menyimpan pengaturan koneksi otomatis server!");
+                player.sendMessage("§r§l§e[§bVOICE§e]§r §2Berhasil menyimpan pengaturan koneksi otomatis server!");
             } catch (ex) {
                 showErrorToOP("Voice AutoConnect Settings Error: " + viewObj(ex));
-                player.sendMessage("§r§l§e[§bMECHA§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
+                player.sendMessage("§r§l§e[§bVOICE§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
             }
         });
 }
@@ -178,7 +180,7 @@ function connectClient(player: Player) {
     }
 
     if (isEmptyOrSpaces(ServerKey)) {
-        player.sendMessage("§cGagal. Kunci client belum dipasang di pengaturan koneksi!");
+        player.sendMessage("§r§l§e[§bVOICE§e]§r §cGagal. Kunci client belum dipasang di pengaturan koneksi!");
         return;
     }
 
@@ -190,7 +192,9 @@ function autoConnect(player: Player) {
     const Port = Number(world.getDynamicProperty("autoConnectPort"));
     const ServerKey = world.getDynamicProperty("autoConnectServerKey") as string;
     if (isEmptyOrSpaces(IP) || isEmptyOrSpaces(ServerKey) || Port === null) {
-        player.sendMessage("§cGagal koneksi otomatis. Pengaturan koneksi otomatis belum di persiapkan!");
+        player.sendMessage(
+            "§r§l§e[§bVOICE§e]§r §cGagal koneksi otomatis. Pengaturan koneksi otomatis belum di persiapkan!"
+        );
         return;
     }
 

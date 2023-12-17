@@ -1,6 +1,6 @@
-import { Player, world } from "@minecraft/server";
+import { Container, Player, world } from "@minecraft/server";
 import { faktaText } from "./fakta";
-import { checkRole } from "../chatrole/index";
+import { checkRole } from "../chatrole";
 import MechAPI from "./mechapi";
 import { MechaPlayer, Spread } from "./types";
 
@@ -247,13 +247,22 @@ export const getInventory = (name: string, itemIdOnly = false) => {
 };
 
 export const getPlayerInventory = (player: Player) => {
+    let position: Container | any = [];
     let container = player.getComponent("inventory")!.container;
     let inventory = [
         ...Array.from(Array(container?.size), (_a, i) => {
             const item = container?.getItem(i);
             if (item) return item;
         }),
-    ].filter((v) => v != undefined);
+    ];
+    let posCount = 0;
+    for (let i = 0; i < inventory.length; i++) {
+        position.push({
+            pos: posCount,
+            ...inventory[i],
+        });
+        posCount += 1;
+    }
     return inventory;
 };
 

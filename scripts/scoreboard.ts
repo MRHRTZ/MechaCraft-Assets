@@ -12,7 +12,7 @@ import {
     getRawDateNow,
     addScore,
     Notes,
-} from "../libs/utils";
+} from "./libs/utils";
 
 export let note = new Notes("Join Server | bit.ly/MechaCraft");
 let runningTextGlobal: any = [];

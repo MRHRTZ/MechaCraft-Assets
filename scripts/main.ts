@@ -1,10 +1,10 @@
 import { world, system, Vector, Player } from "@minecraft/server";
 import { MenuForm } from "./menu";
-import { ShopUI } from "./shop/index";
-import { TpaUI } from "./tpa/index";
-import { checkRole, formatRole } from "./chatrole/index";
-import { commands, prefix } from "./commands/index";
-import { showScoreboard, giftPlayer, messageInfo } from "./scoreboard/index";
+import { ShopUI } from "./shop";
+import { TpaUI } from "./tpa";
+import { checkRole, formatRole } from "./chatrole";
+import { commands, prefix } from "./commands";
+import { showScoreboard, giftPlayer, messageInfo } from "./scoreboard";
 import { showErrorToOP, viewObj } from "./libs/utils";
 import { Network } from "./libs/voice-net";
 import MechAPI from "./libs/mechapi";

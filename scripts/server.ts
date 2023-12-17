@@ -1,7 +1,7 @@
 import { Player, world } from "@minecraft/server";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import { isEmptyOrSpaces, showErrorToOP, viewObj } from "../libs/utils";
-import MechAPI from "../libs/mechapi";
+import { isEmptyOrSpaces, showErrorToOP, viewObj } from "./libs/utils";
+import MechAPI from "./libs/mechapi";
 
 export function ServerMenu(player: Player) {
     const config = MechAPI.getConfig(player, true);
@@ -58,17 +58,17 @@ export function ServerSettings(player: Player) {
                 portNum > 65535
             ) {
                 player.sendMessage(
-                    "§cGagal. IP Port dan Auth tidak boleh kosong! Nomor Port harus diantara 1025-65535"
+                    "§r§l§e[§bSERVER§e]§r §cGagal. IP Port dan Auth tidak boleh kosong! Nomor Port harus diantara 1025-65535"
                 );
                 return;
             }
 
             try {
                 MechAPI.setConfig(AUTH as string, IP as string, PORT as string);
-                player.sendMessage("§2Berhasil menyimpan pengaturan server mecha!");
+                player.sendMessage("§r§l§e[§bSERVER§e]§r §aBerhasil menyimpan pengaturan server mecha!");
             } catch (ex) {
                 showErrorToOP("Server Setting Error: " + viewObj(ex));
-                player.sendMessage("§r§l§e[§bMECHA§e]§r §cTerdapat kesalahan, silahkan hubungi admin.");
+                player.sendMessage("§r§l§e[§bMECHA§e]§r §cTerdapat kesalahan, silahkan hubungi operator.");
             }
         });
 }

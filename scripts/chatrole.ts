@@ -1,7 +1,7 @@
 import { Player } from "@minecraft/server";
-import { colorOptions, formatOptions, viewObj, getPlayers, getPlayersRole } from "../libs/utils";
+import { colorOptions, formatOptions, viewObj, getPlayers, getPlayersRole } from "./libs/utils";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
-import MechAPI from "../libs/mechapi";
+import MechAPI from "./libs/mechapi";
 
 export const ROLE = {
     OPERATOR: {

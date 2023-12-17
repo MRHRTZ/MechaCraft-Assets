@@ -9,8 +9,8 @@ import {
     isPlayerAdmin,
     showErrorToOP,
     viewObj,
-} from "../libs/utils";
-import MechAPI from "../libs/mechapi";
+} from "./libs/utils";
+import MechAPI from "./libs/mechapi";
 
 export async function TpaForm(player: Player) {
     let form = new ActionFormData();
@@ -67,11 +67,11 @@ export async function TpaSearch(player: Player | any) {
         form.show(player).then(async (result) => {
             if (result.canceled) return;
             const targetPlayer = players.player[result.selection!];
-            // if (player.name == targetPlayer.name) {
-            //     player.sendMessage("§l§6[TPA] §r§cTidak bisa TP ke diri sendiri!");
-            //     player.playSound("note.bass");
-            //     return;
-            // }
+            if (player.name == targetPlayer.name) {
+                player.sendMessage("§l§6[TPA] §r§cTidak bisa TP ke diri sendiri!");
+                player.playSound("note.bass");
+                return;
+            }
 
             const resp = await MechAPI.requestTpa(player, targetPlayer);
             if (resp.status) {
@@ -120,10 +120,6 @@ export async function TpaPending(player: Player | any) {
         form.show(player).then((result) => {
             if (result.canceled) return;
             const tpaRequest = listTpa[result.selection!];
-            // player.sendMessage("from " + tpaRequest.fromName + " " + viewObj(getPlayerByName(tpaRequest.fromName)));
-            // player.sendMessage(
-            //     "target " + tpaRequest.targetName + " " + viewObj(getPlayerByName(tpaRequest.targetName))
-            // );
             const fromPlayer = getPlayerByName(tpaRequest.fromName);
             const targetPlayer = getPlayerByName(tpaRequest.targetName);
 
@@ -145,7 +141,6 @@ export async function TpaPending(player: Player | any) {
                 }
             }
 
-            player.sendMessage(tpaRequest.fromName + " to " + tpaRequest.targetName);
             TpaUI(fromPlayer, targetPlayer);
         });
     } catch (error) {

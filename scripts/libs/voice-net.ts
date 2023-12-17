@@ -23,7 +23,7 @@ class Network {
      * @argument {Player} PlayerObject
      */
     static Connect(Ip: string, Port: number, Key: string, PlayerObject: Player) {
-        PlayerObject.sendMessage("§eSedang menyambung ke server...");
+        PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §eSedang menyambung ke server...");
 
         this.IP = Ip;
         this.Port = Port;
@@ -40,13 +40,15 @@ class Network {
         http.request(request).then((response) => {
             if (response.status == 200) {
                 this.IsConnected = true;
-                PlayerObject.sendMessage("§aLogin Diterima. Server terkoneksi!");
+                PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §aLogin Diterima. Server terkoneksi!");
             } else if (response.status == 403) {
                 this.IsConnected = false;
-                PlayerObject.sendMessage("§cLogin Ditolak. Gagal koneksi server!");
+                PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §cLogin Ditolak. Gagal koneksi server!");
             } else {
                 this.IsConnected = false;
-                PlayerObject.sendMessage("§cTidak dapat mengakses server. Cek IP dan PORT agar sesuai!");
+                PlayerObject.sendMessage(
+                    "§r§l§e[§bVOICE§e]§r §cTidak dapat mengakses server. Cek IP dan PORT agar sesuai!"
+                );
             }
         });
     }
@@ -58,7 +60,7 @@ class Network {
     static RequestBinding(Key, PlayerObject) {
         if (!Network.IsConnected) {
             PlayerObject.sendMessage(
-                "§cTidak bisa mendapatkan kunci sesi. Server tidak terkoneksi, jika masalah ini terus berlanjut hubungi admin!"
+                "§r§l§e[§bVOICE§e]§r §cTidak bisa mendapatkan kunci sesi. Server tidak terkoneksi, jika masalah ini terus berlanjut hubungi admin!"
             );
             return;
         }
@@ -79,9 +81,11 @@ class Network {
             if (response.status == 202) {
                 PlayerObject.sendMessage("§2Voice tersambung!");
                 if (world.getDynamicProperty("sendBindedMessage"))
-                    world.sendMessage(`§b${PlayerObject.name} §2telah masuk world voice!`);
+                    world.sendMessage(`§r§l§e[§bVOICE§e]§r §b${PlayerObject.name} §2telah masuk world voice!`);
             } else {
-                PlayerObject.sendMessage("§cGagal menyambung. Kunci salah atau telah tersambung sebelumnya!");
+                PlayerObject.sendMessage(
+                    "§r§l§e[§bVOICE§e]§r §cGagal menyambung. Kunci salah atau telah tersambung sebelumnya!"
+                );
             }
         });
     }
@@ -94,7 +98,7 @@ class Network {
      */
     static UpdateSettings(PlayerObject, ProximityDistance, ProximityToggle, VoiceEffects) {
         if (!Network.IsConnected) {
-            PlayerObject.sendMessage("§cGagal mengubah pengaturan. Tidak terkoneksi server!");
+            PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §cGagal mengubah pengaturan. Tidak terkoneksi server!");
             return;
         }
 
@@ -111,9 +115,9 @@ class Network {
         request.setHeaders([new HttpHeader("Content-Type", "application/json")]);
         http.request(request).then((response) => {
             if (response.status == 200) {
-                PlayerObject.sendMessage("§2Berhasil menyimpan pengaturan eksternal server!");
+                PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §2Berhasil menyimpan pengaturan eksternal server!");
             } else {
-                PlayerObject.sendMessage("§cTerdapat error, gagal mengubah pengaturan!");
+                PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §cTerdapat error, gagal mengubah pengaturan!");
             }
         });
     }
@@ -123,7 +127,7 @@ class Network {
      */
     static ShowSettings(PlayerObject) {
         if (!Network.IsConnected) {
-            PlayerObject.sendMessage("§cGagal mengambil data pengaturan. Server tidak tersambung!");
+            PlayerObject.sendMessage("§r§l§e[§bVOICE§e]§r §cGagal mengambil data pengaturan. Server tidak tersambung!");
             return;
         }
 
@@ -316,28 +320,6 @@ system.runInterval(() => {
             }
         });
     }
-    // try {
-    //     if (world.getDynamicProperty("serverSettingsHudDisplay"))
-    //         world
-    //             .getDimension("minecraft:overworld")
-    //             .runCommandAsync(
-    //                 `title @a actionbar §bServer Connection: ${
-    //                     Network.IsConnected ? "§aConnected" : "§cDisconnected"
-    //                 }` +
-    //                     `\n§bVoice Proximity: ${Network.ProximityEnabled ? "§2Enabled" : "§cDisabled"}` +
-    //                     `\n§bVoice Effects: ${Network.VoiceEffectEnabled ? "§2Enabled" : "§cDisabled"}` +
-    //                     `\n§bVoice Proximity Distance: §e${Network.ProximityDistance}` +
-    //                     `\n\n§bText Proximity: ${
-    //                         world.getDynamicProperty("textProximityChat") ? "§2Enabled" : "§cDisabled"
-    //                     }` +
-    //                     `\n§bText Proximity Distance: §e${world.getDynamicProperty("textProximityDistance")}` +
-    //                     `${
-    //                         world.getDynamicProperty("displayServerAddressOnHud")
-    //                             ? `\n\n§bServer Address: ${Network.IP}:${Network.Port}`
-    //                             : ""
-    //                     }`
-    //             );
-    // } catch {}
 });
 
 system.runInterval(() => {

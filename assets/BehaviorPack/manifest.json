@@ -2,12 +2,12 @@
     "format_version": 2,
     "header": {
         "name": "MechaAssets [BP]",
-        "description": "§6Behavior Pack §a1.10.25",
-        "uuid": "d08d83d4-703b-43ae-8543-62d0e8299997",
+        "description": "§6Behavior Pack §a1.12.17",
+        "uuid": "2de3c0ab-9b1d-42dd-b73e-b08a89a3411e",
         "version": [
             1,
-            10,
-            25
+            12,
+            17
         ],
         "min_engine_version": [
             1,

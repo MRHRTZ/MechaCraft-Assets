@@ -1,8 +1,8 @@
 import { world, Player } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData, FormCancelationReason } from "@minecraft/server-ui";
 
-import { showErrorToOP, viewObj } from "../libs/utils";
-import MechAPI from "../libs/mechapi";
+import { showErrorToOP, viewObj } from "./libs/utils";
+import MechAPI from "./libs/mechapi";
 
 // Functions
 export async function addWaypoint(player: Player, name: string, isPublic: boolean) {

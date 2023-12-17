@@ -4,7 +4,7 @@ import * as mcnet from "@minecraft/server-net";
 import { isEmptyOrSpaces, serialize, showErrorToOP, viewObj } from "./utils";
 import { MessageFormData } from "@minecraft/server-ui";
 import { mechaResponse } from "./types";
-import { changeRole } from "../chatrole/index";
+import { changeRole } from "../chatrole";
 
 interface Config {
     auth: string | any;
@@ -21,17 +21,22 @@ class MechAPI {
     }
 
     static getConfig(player: Player, ignore = false): Config | any {
-        const auth = world.getDynamicProperty("mechaServerAuth")?.toString();
         const host = world.getDynamicProperty("mechaServerHost")?.toString();
         const port = world.getDynamicProperty("mechaServerPort")?.toString();
+        const auth = world.getDynamicProperty("mechaServerAuth")?.toString();
 
-        if (!ignore) {
-            if (isEmptyOrSpaces(auth) || isEmptyOrSpaces(host) || isEmptyOrSpaces(port)) {
-                if (player.hasOwnProperty("sendMessage")) {
-                    player.sendMessage("§cKonfigurasi server mecha belum dipersiapkan!");
-                }
-                return;
-            }
+        const defaultHost = "127.0.0.1";
+        const defaultPort = "9052";
+        const defaultAuth = "mechacraft@2024";
+
+        if (isEmptyOrSpaces(host)) {
+            world.setDynamicProperty("mechaServerHost", defaultHost);
+        }
+        if (isEmptyOrSpaces(port)) {
+            world.setDynamicProperty("mechaServerPort", defaultPort);
+        }
+        if (isEmptyOrSpaces(auth)) {
+            world.setDynamicProperty("mechaServerAuth", defaultAuth);
         }
 
         return {
@@ -477,6 +482,80 @@ class MechAPI {
         } else {
             showErrorToOP("Galat:" + viewObj(response));
             return { status: false, message: "Gagal transfer uang" };
+        }
+    }
+
+    // GUILD
+    static async getGuildMemberCost(player: Player) {
+        const response = await this.getRequest(player, "/api/v1/guild/cost_member");
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else {
+                return { status: false, message: "Gagal mengambil data biaya member" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal mengambil data biaya member" };
+        }
+    }
+
+    static async getPublicGuilds(player: Player) {
+        const response = await this.getRequest(player, "/api/v1/guilds");
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else {
+                return { status: false, message: "Gagal mengambil data guild publik" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal mengambil data guild publik" };
+        }
+    }
+
+    static async getGuild(player: Player, guildId: number) {
+        const response = await this.getRequest(player, "/api/v1/guild/" + guildId);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else {
+                return { status: false, message: "Gagal mengambil data guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal mengambil data guild" };
+        }
+    }
+
+    static async createGuild(player: Player, name: string, description: string, maxMember: number, isPublic: boolean) {
+        const data = {
+            xuid: player.id,
+            name,
+            description,
+            maxMember: Number(maxMember),
+            isPublic,
+        };
+        const response = await this.postRequest(player, "/api/v1/guild/create", data);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else if (resp.code == 1001) {
+                return { status: false, message: "Uang tidak cukup", not_enough_money: true };
+            } else if (resp.code == 1002) {
+                return { status: false, message: "Kamu masih mempunyai guild" };
+            } else if (resp.code == 1003) {
+                return { status: false, message: "Nama guild '" + name + "' sudah ada." };
+            } else {
+                return { status: false, message: "Gagal membuat guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal membuat guild" };
         }
     }
 }

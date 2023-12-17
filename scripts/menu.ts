@@ -1,16 +1,17 @@
 import { Player } from "@minecraft/server";
 import { ActionFormData } from "@minecraft/server-ui";
 
-import { ShopUI } from "./shop/index";
-import { TpaForm } from "./tpa/index";
-import { ChatManageForm, checkRole } from "./chatrole/index";
-import { RunningTextForm, ScoreboardManager, NotesManager } from "./scoreboard/index";
-import { WaypointForm } from "./waypoint/index";
-import { VoicePageAdmin, VoicePageUser } from "./voice/index";
-import { ServerMenu } from "./server/index";
+import { ShopUI } from "./shop";
+import { TpaForm } from "./tpa";
+import { ChatManageForm, checkRole } from "./chatrole";
+import { RunningTextForm, ScoreboardManager, NotesManager } from "./scoreboard";
+import { WaypointForm } from "./waypoint";
+import { VoicePageAdmin, VoicePageUser } from "./voice";
+import { ServerMenu } from "./server";
 import MechAPI from "./libs/mechapi";
 import { getPlayersRole } from "./libs/utils";
 import { MechaPlayer } from "./libs/types";
+import { GuildMenu } from "./guild";
 
 export async function MenuForm(player: Player | any) {
     const resp = await MechAPI.getUser(player);
@@ -18,14 +19,13 @@ export async function MenuForm(player: Player | any) {
     if (!resp.status) {
         if (!["USER", "VIP"].includes(userRole)) {
             let form = new ActionFormData()
-                .title(`§l§cMecha §2MainMenu`)
                 .body(
                     `\n           §¶[  §l§cMecha§aCraft §6Menu §r ]
                 
 §cServer tidak tersambung. Harap siapkan server mecha terlebih dahulu!\n
 `
                 )
-                .button("Pengaturan Server", "textures/ui/settings_glyph_color_2x.png");
+                .button("Pengaturan Server", "textures/ui/settings_glyph_color_2x");
             form.show(player).then((result) => {
                 if (!result.canceled) {
                     if (result.selection == 0) {
@@ -35,7 +35,6 @@ export async function MenuForm(player: Player | any) {
             });
         } else {
             new ActionFormData()
-                .title(`§l§cMecha §2MainMenu`)
                 .body(
                     `\n           §¶[  §l§cMecha§aCraft §6Menu §r ]
                 
@@ -48,7 +47,7 @@ export async function MenuForm(player: Player | any) {
                     if (!result.canceled) {
                         if (result.selection == 0) {
                             let adminCount = 0;
-                            for (let op of getPlayersRole(["OPERATOR", "MODERATOR", "BUILDER", "STAFF"])) {
+                            for (let op of getPlayersRole(["OPERATOR", "ADMIN", "MODERATOR", "BUILDER", "STAFF"])) {
                                 adminCount += 1;
                                 op.sendMessage(
                                     `§r§l§e[§bNOTIFY§e]§r §6Untuk para admin harap persiapkan server mecha agar dapat berjalan.`
@@ -72,33 +71,32 @@ export async function MenuForm(player: Player | any) {
 
     let user: MechaPlayer = resp.result;
     let form = new ActionFormData();
-    form.title(`§l§cMecha §2MainMenu`);
     form.body(
         `\n           §¶[  §l§cMecha§aCraft §6Menu §r ]
         
     §fNameTag §c: §b${player.nameTag}
-    §fUang    §c: §a${user.money}
-    §fGuild   §c: §f${user?.guild ? user.guild.name : "-"}\n
+    §fUang    §c: §a${user.money}${user?.guild ? "\n    §fGuild   §c: §f" + user.guild.name : "-"}\n
 `
     );
     form.button("Toko", "textures/ui/Scaffolding");
+    form.button("Guild", "textures/ui/icon_multiplayer");
     form.button("Teleportasi ke Pemain", "textures/ui/warning_alex");
-    form.button("Pengaturan Voice", "textures/ui/sound_glyph_color_2x.png");
+    form.button("Pengaturan Voice", "textures/ui/sound_glyph_color_2x");
     form.button("Waypoint", "textures/ui/world_glyph_color");
     form.button("Papan Info", "textures/ui/storageIconColor");
 
     // MENU ROLES
     if (["OPERATOR", "ADMIN"].includes(userRole)) {
-        form.button("Pengaturan Server", "textures/ui/settings_glyph_color_2x.png");
+        form.button("Pengaturan Server", "textures/ui/settings_glyph_color_2x");
         form.button("Ubah Role", "textures/ui/multiplayer_glyph_color");
         form.button("Catatan Server", "textures/ui/tiny_agnes");
         form.button("Pesan Berjalan", "textures/ui/comment");
     } else if (userRole == "MODERATOR") {
-        form.button("Pengaturan Server", "textures/ui/settings_glyph_color_2x.png");
+        form.button("Pengaturan Server", "textures/ui/settings_glyph_color_2x");
         form.button("Catatan Server", "textures/ui/tiny_agnes");
         form.button("Pesan Berjalan", "textures/ui/comment");
     } else if (["STAFF", "BUILDER"].includes(userRole)) {
-        form.button("Pengaturan Server", "textures/ui/settings_glyph_color_2x.png");
+        form.button("Pengaturan Server", "textures/ui/settings_glyph_color_2x");
     }
 
     form.show(player).then((result) => {
@@ -109,27 +107,30 @@ export async function MenuForm(player: Player | any) {
                         ShopUI(player);
                         break;
                     case 1:
-                        TpaForm(player);
+                        GuildMenu(player);
                         break;
                     case 2:
-                        VoicePageAdmin(player);
+                        TpaForm(player);
                         break;
                     case 3:
-                        WaypointForm(player);
+                        VoicePageAdmin(player);
                         break;
                     case 4:
-                        ScoreboardManager(player);
+                        WaypointForm(player);
                         break;
                     case 5:
-                        ServerMenu(player);
+                        ScoreboardManager(player);
                         break;
                     case 6:
-                        ChatManageForm(player);
+                        ServerMenu(player);
                         break;
                     case 7:
-                        NotesManager(player);
+                        ChatManageForm(player);
                         break;
                     case 8:
+                        NotesManager(player);
+                        break;
+                    case 9:
                         RunningTextForm(player);
                         break;
                     default:
@@ -141,24 +142,27 @@ export async function MenuForm(player: Player | any) {
                         ShopUI(player);
                         break;
                     case 1:
-                        TpaForm(player);
+                        GuildMenu(player);
                         break;
                     case 2:
-                        VoicePageUser(player);
+                        TpaForm(player);
                         break;
                     case 3:
-                        WaypointForm(player);
+                        VoicePageUser(player);
                         break;
                     case 4:
-                        ScoreboardManager(player);
+                        WaypointForm(player);
                         break;
                     case 5:
-                        ServerMenu(player);
+                        ScoreboardManager(player);
                         break;
                     case 6:
-                        NotesManager(player);
+                        ServerMenu(player);
                         break;
                     case 7:
+                        NotesManager(player);
+                        break;
+                    case 8:
                         RunningTextForm(player);
                         break;
                     default:
@@ -170,28 +174,22 @@ export async function MenuForm(player: Player | any) {
                         ShopUI(player);
                         break;
                     case 1:
-                        TpaForm(player);
+                        GuildMenu(player);
                         break;
                     case 2:
-                        VoicePageUser(player);
+                        TpaForm(player);
                         break;
                     case 3:
-                        WaypointForm(player);
+                        VoicePageUser(player);
                         break;
                     case 4:
-                        ScoreboardManager(player);
-                        break;
-                    case 5:
-                        ServerMenu(player);
-                        break;
-                    case 6:
-                        ScoreboardManager(player);
-                        break;
-                    case 7:
                         WaypointForm(player);
                         break;
-                    case 8:
-                        VoicePageAdmin(player);
+                    case 5:
+                        ScoreboardManager(player);
+                        break;
+                    case 6:
+                        ServerMenu(player);
                         break;
                     default:
                         break;
@@ -202,15 +200,18 @@ export async function MenuForm(player: Player | any) {
                         ShopUI(player);
                         break;
                     case 1:
-                        TpaForm(player);
+                        GuildMenu(player);
                         break;
                     case 2:
-                        VoicePageUser(player);
+                        TpaForm(player);
                         break;
                     case 3:
-                        WaypointForm(player);
+                        VoicePageUser(player);
                         break;
                     case 4:
+                        WaypointForm(player);
+                        break;
+                    case 5:
                         ScoreboardManager(player);
                         break;
                     default:
