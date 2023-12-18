@@ -5,6 +5,7 @@ import { isEmptyOrSpaces, serialize, showErrorToOP, viewObj } from "./utils";
 import { MessageFormData } from "@minecraft/server-ui";
 import { mechaResponse } from "./types";
 import { changeRole } from "../chatrole";
+import { removeGuildTag } from "../guild";
 
 interface Config {
     auth: string | any;
@@ -160,6 +161,7 @@ class MechAPI {
                 if (response.status == 200) {
                     const resp: mechaResponse = JSON.parse(response.body);
                     changeRole(player, resp.result.role);
+                    if (!resp.result.guildId) removeGuildTag(player);
                 } else {
                     showErrorToOP("Galat:" + viewObj(response));
                 }
@@ -550,12 +552,136 @@ class MechAPI {
                 return { status: false, message: "Kamu masih mempunyai guild" };
             } else if (resp.code == 1003) {
                 return { status: false, message: "Nama guild '" + name + "' sudah ada." };
+            } else if (resp.code == 1004) {
+                return { status: false, message: "Nama guild maksimal 15 karakter." };
             } else {
                 return { status: false, message: "Gagal membuat guild" };
             }
         } else {
             showErrorToOP("Galat:" + viewObj(response));
             return { status: false, message: "Gagal membuat guild" };
+        }
+    }
+
+    static async updateGuild(player: Player, name: string, description: string, maxMember: number, isPublic: boolean) {
+        const data = {
+            xuid: player.id,
+            name,
+            description,
+            maxMember: Number(maxMember),
+            isPublic,
+        };
+        const response = await this.putRequest(player, "/api/v1/guild", data);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else if (resp.code == 1001) {
+                return { status: false, message: "User tidak tersedia" };
+            } else if (resp.code == 1002) {
+                return { status: false, message: "Kamu tidak mempunyai guild" };
+            } else if (resp.code == 1003) {
+                return { status: false, message: "Kamu tidak mempunyai akses untuk mengubah guild" };
+            } else if (resp.code == 1004) {
+                return { status: false, message: "Uang tidak cukup", not_enough_money: true };
+            } else if (resp.code == 1005) {
+                return { status: false, message: "Gagal mengubah jumlah member", failed_update_member: true };
+            } else if (resp.code == 1006) {
+                return { status: false, message: "Nama guild maksimal 15 karakter." };
+            } else {
+                return { status: false, message: "Gagal mengubah guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal mengubah guild" };
+        }
+    }
+
+    static async promoteMemberGuild(player: Player, guild: any, member: any, role: string) {
+        const data = {
+            xuid: member.xuid,
+            guildId: guild.guildId,
+            role,
+        };
+        const response = await this.postRequest(player, "/api/v1/guild/promote", data);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else if (resp.code == 1002) {
+                return { status: false, message: "Role LEADER tidak bisa diubah!" };
+            } else {
+                return { status: false, message: "Gagal promosi guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal promosi guild" };
+        }
+    }
+
+    static async joinGuild(player: Player, guildId: number) {
+        const data = {
+            xuid: player.id,
+            guildId: Number(guildId),
+        };
+        const response = await this.postRequest(player, "/api/v1/guild/join", data);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else if (resp.code == 1001) {
+                return { status: false, message: "Kamu masih memiliki guild" };
+            } else if (resp.code == 1002) {
+                return { status: false, message: "Tidak bisa bergabung, guild ini sudah penuh." };
+            } else {
+                return { status: false, message: "Gagal memasuki guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal memasuki guild" };
+        }
+    }
+
+    static async leaveGuild(player: any, guildId: number) {
+        const data = {
+            xuid: player.xuid,
+            guildId: Number(guildId),
+        };
+        const response = await this.postRequest(player, "/api/v1/guild/leave", data);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else if (resp.code == 1001) {
+                return { status: false, message: "User tidak tersedia" };
+            } else if (resp.code == 1002) {
+                return { status: false, message: "Gagal keluar. Kamu tidak memiliki guild." };
+            } else if (resp.code == 1003) {
+                return { status: false, message: "Pemilik tidak bisa keluar guild, tapi bisa menghapusnya." };
+            } else {
+                return { status: false, message: "Gagal keluar guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal keluar guild" };
+        }
+    }
+
+    static async deleteGuild(player: Player) {
+        const data = {
+            xuid: player.id,
+        };
+        const response = await this.deleteRequest(player, "/api/v1/guild/delete", data);
+        if (response.status == 200) {
+            const resp: mechaResponse = JSON.parse(response.body);
+            if (resp.code == 200) {
+                return { status: true, result: resp.result };
+            } else {
+                return { status: false, message: "Gagal menghapus guild" };
+            }
+        } else {
+            showErrorToOP("Galat:" + viewObj(response));
+            return { status: false, message: "Gagal menghapus guild" };
         }
     }
 }

@@ -15,17 +15,17 @@
     },
     "header": {
         "name": "MechaAssets [RP]",
-        "description": "§6Resource Pack §a1.12.17",
+        "description": "§6Resource Pack §a1.15.6",
         "min_engine_version": [
             1,
             20,
             50
         ],
-        "uuid": "b4482b5a-8bab-4cdd-b5ba-e2916512914a",
+        "uuid": "1c82bbbc-7a27-454c-962a-e0b2d822cb59",
         "version": [
             1,
-            12,
-            17
+            15,
+            6
         ]
     },
     "modules": [

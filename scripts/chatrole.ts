@@ -1,21 +1,22 @@
 import { Player } from "@minecraft/server";
-import { colorOptions, formatOptions, viewObj, getPlayers, getPlayersRole } from "./libs/utils";
+import { colorOptions, formatOptions, viewObj, getPlayers, getPlayersRole, showErrorToOP } from "./libs/utils";
 import { ActionFormData, ModalFormData } from "@minecraft/server-ui";
 import MechAPI from "./libs/mechapi";
+import { formatGuild, getGuildTag } from "./guild";
 
 export const ROLE = {
     OPERATOR: {
-        DISPLAY: "OPERATOR",
+        DISPLAY: "OP",
         COLOR: "§c",
         FORMAT: "§l",
     },
     MODERATOR: {
-        DISPLAY: "MODERATOR",
+        DISPLAY: "MOD",
         COLOR: "§b",
         FORMAT: "§l",
     },
     BUILDER: {
-        DISPLAY: "BUILDER",
+        DISPLAY: "BUILD",
         COLOR: "§a",
         FORMAT: "§l",
     },
@@ -36,17 +37,29 @@ export const ROLE = {
     },
 };
 
-export function formatRole(role: string): string {
+export function formatRole(player: Player, role: string): string {
+    var format = "";
+    const guildName = getGuildTag(player);
     const d = ROLE[role].DISPLAY;
     const c = ROLE[role].COLOR;
     const f = ROLE[role].FORMAT;
-    return `${c}${f}[${d}]§r`;
+    if (guildName) {
+        format = formatGuild(guildName);
+        if (role != "USER") {
+            format += `§r ${f}§f[${c}${d}§f]§r`;
+        }
+    } else {
+        format = `${f}§f[${c}${d}§f]§r`;
+    }
+    return format;
 }
 
 export function checkRole(player: Player) {
     if (player.getTags().join("|").includes("role:")) {
-        const role = player.getTags().filter((v) => v.includes("role:"))[0];
-        return role.replace("role:", "");
+        return player
+            .getTags()
+            .filter((v) => v.includes("role:"))[0]
+            .replace("role:", "");
     } else {
         return "USER";
     }
@@ -59,7 +72,7 @@ export function changeRole(player: Player, role: string, notify: boolean = false
         player.removeTag(tagRole);
     }
     // Add new role
-    const roleFormat = formatRole(role);
+    const roleFormat = formatRole(player, role);
     player.addTag(`role:${role}`);
 
     if (notify) {
@@ -75,7 +88,7 @@ export function changeRole(player: Player, role: string, notify: boolean = false
 export function ChatRolePlayerManager(player: Player | any, admin: Player | any) {
     try {
         const playerRole = checkRole(player);
-        const chatFormat = formatRole(playerRole);
+        const chatFormat = formatRole(player, playerRole);
         const roleOptions = Object.keys(ROLE);
         let chats = new ModalFormData()
             .title(`Ubah Role ${player.nameTag}`)

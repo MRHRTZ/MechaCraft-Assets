@@ -6,13 +6,64 @@ import { getPlayerByName, showErrorToOP, viewObj } from "./libs/utils";
 
 export const GUILD_ROLE: string[] = ["LEADER", "MODERATOR", "MEMBER"];
 
-// TODO: create guild user tag
+export function formatGuild(guildname: string): string {
+    return `§l§f[§r${guildname}§l§f]§r`;
+}
+
+export function getGuildTag(player: Player | any) {
+    var guildTag = null;
+    var mcPlayer: Player | any = player;
+    if (typeof player.getTags != "function") {
+        mcPlayer = getPlayerByName(player.name);
+    }
+    if (mcPlayer.getTags().join("|").includes("guild:")) {
+        let tagGuild = mcPlayer.getTags().filter((v) => v.includes("guild:"))[0];
+        guildTag = tagGuild.replace("guild:", "");
+    }
+    return guildTag;
+}
+
+export function removeGuildTag(player: Player | any) {
+    var mcPlayer = player;
+    if (typeof player.getTags != "function") {
+        mcPlayer = getPlayerByName(player.name);
+    }
+    if (mcPlayer.getTags().join("|").includes("guild:")) {
+        let tagGuild = mcPlayer.getTags().filter((v) => v.includes("guild:"))[0];
+        mcPlayer.removeTag(tagGuild);
+    }
+}
+
+export function setGuildTag(player: Player, guildName: string) {
+    removeGuildTag(player);
+
+    // Add new guild
+    player.addTag(`guild:${guildName}`);
+
+    return formatGuild(guildName);
+}
+
+export function getGuildPlayers(guildName: string): Player[] {
+    var players: Player[] = [];
+    for (let player of world.getPlayers()) {
+        if (
+            player
+                .getTags()
+                .join("|")
+                .includes("guild:" + guildName)
+        ) {
+            players.push(player);
+        }
+    }
+    return players;
+}
 
 export async function GuildMenu(player: Player) {
     const resp = await MechAPI.getUser(player);
     if (!resp.status) {
-        player.sendMessage(`§r§l§e[§GUILD§e]§r §c${resp.message}`);
+        player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp.message}`);
         player.playSound("note.bass");
+        return;
     }
 
     const user: MechaPlayer = resp.result;
@@ -20,15 +71,16 @@ export async function GuildMenu(player: Player) {
     if (user.guild) {
         const resp_guild = await MechAPI.getGuild(player, user.guildId);
         if (!resp_guild.status) {
-            player.sendMessage(`§r§l§e[§GUILD§e]§r §c${resp_guild.message}`);
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_guild.message}`);
             player.playSound("note.bass");
+            return;
         }
 
         const guildRole = user.guildMember.memberRole;
         const guild = resp_guild.result;
         const guildText = `
-    §fGuild        §c: §f${user?.guild ? user.guild.name : "-"}
-    §fTotal Member §c: §b${guild.members.length} §f/ §b${guild.maxMembers}
+    §fGuild        §c: §f${user?.guild ? user.guild.name : "-"}§r
+    §fTotal Member §c: §b${guild.members.length}§f/§b${guild.maxMembers}
     §fRole kamu    §c: §d${guildRole}
     `;
         let form = new ActionFormData();
@@ -42,15 +94,14 @@ export async function GuildMenu(player: Player) {
         }
         form.show(player).then((result) => {
             if (result.canceled) return;
-            if (result.selection == 0) GuildMember(player, guild.name, guild.members);
-            // TODO: form guild settings & member
-            // if (result.selection == 1) GuildSettings(player);
-            // if (result.selection == 2) GuildDelete(player);
+            if (result.selection == 0) GuildMember(player, guild, guild.members, guildRole);
+            if (result.selection == 1) GuildSettings(player, user);
+            if (result.selection == 2) GuildDelete(player, guild);
         });
     } else {
         const guildText = `\n§6Kamu belum memiliki guild. Silahkan buat atau bergabung pada guild yang tersedia!\n\n`;
         let form = new ActionFormData();
-        form.body(`\n               §¶[ §l§cGuild §6Menu §r ]\n${guildText}`);
+        form.body(`\n               §¶[ §l§cGuild §6Menu §r ]\n${guildText}`);
         form.button("Buat Guild", "textures/ui/xbox_dpad");
         form.button("Cari Guild", "textures/ui/glyph_realms");
         form.show(player).then((result) => {
@@ -65,8 +116,9 @@ export async function GuildMenu(player: Player) {
 export async function GuildCreate(player: Player, user: MechaPlayer) {
     const resp = await MechAPI.getGuildMemberCost(player);
     if (!resp.status) {
-        player.sendMessage(`§r§l§e[§GUILD§e]§r §c${resp.message}`);
+        player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp.message}`);
         player.playSound("note.bass");
+        return;
     }
 
     const cost_member: number = resp.result.cost_member;
@@ -84,36 +136,36 @@ export async function GuildCreate(player: Player, user: MechaPlayer) {
 
 §a-------------------------------
 
-§fNama guild:`,
+§fNama:`,
         "Masukan nama guild ..."
     );
-    modal.textField("§fDeskripsi guild:", "Masukan deskripsi guild ...");
-    modal.textField("§fMaks member guild:", "Masukan angka maksimal member", "10");
+    modal.textField("§fDeskripsi:", "Masukan deskripsi guild ...");
+    modal.textField("§fMaks member:", "Masukan angka maksimal member", "10");
     modal.toggle("§fGuild publik", true);
     modal.show(player).then(async (res) => {
         if (res.canceled) return;
 
         if (!res.formValues![0]) {
-            player.sendMessage(`§r§l§e[§GUILD§e]§r §cNama guild tidak valid!`);
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cNama guild tidak valid!`);
             player.playSound(`note.bass`);
             return;
         }
         const namaGuild = res.formValues![0] as string;
 
         if (!res.formValues![1]) {
-            player.sendMessage(`§r§l§e[§GUILD§e]§r §cDeskripsi guild tidak valid!`);
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cDeskripsi guild tidak valid!`);
             player.playSound(`note.bass`);
             return;
         }
         const deskripsiGuild = res.formValues![1] as string;
 
         if (!res.formValues![2]) {
-            player.sendMessage(`§r§l§e[§GUILD§e]§r §cMasukan maksimal member!`);
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cMasukan maksimal member!`);
             player.playSound(`note.bass`);
             return;
         }
         if (isNaN(res.formValues![2] as number)) {
-            player.sendMessage(`§r§l§e[§GUILD§e]§r §cKamu hanya bisa memasukan level memakai angka`);
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cKamu hanya bisa memasukan level memakai angka`);
             player.playSound(`note.bass`);
             return;
         }
@@ -124,7 +176,7 @@ export async function GuildCreate(player: Player, user: MechaPlayer) {
         let guild_cost = maksMember * cost_member;
         if (user.money < guild_cost) {
             player.sendMessage(
-                `§r§l§e[§GUILD§e]§r §cUang anda saat ini §a${user.money} §ctidak cukup untuk membuat guild dengan §b${maksMember} member §cdan total biaya §a${guild_cost}`
+                `§r§l§e[§bGUILD§e]§r §cUang anda saat ini §a${user.money} §ctidak cukup untuk membuat guild dengan §b${maksMember} member §cdan total biaya §a${guild_cost}`
             );
             player.playSound(`note.bass`);
             return;
@@ -134,17 +186,18 @@ export async function GuildCreate(player: Player, user: MechaPlayer) {
         if (!resp_create.status) {
             if (resp_create.not_enough_money) {
                 player.sendMessage(
-                    `§r§l§e[§GUILD§e]§r §cUang anda saat ini §a${user.money} §ctidak cukup untuk membuat guild dengan §b${maksMember} member §cdan total biaya §a${guild_cost}`
+                    `§r§l§e[§bGUILD§e]§r §cUang anda saat ini §a${user.money} §ctidak cukup untuk membuat guild dengan §b${maksMember} member §cdan total biaya §a${guild_cost}`
                 );
             } else {
-                player.sendMessage(`§r§l§e[§GUILD§e]§r §c${resp_create.message}`);
+                player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_create.message}`);
             }
             player.playSound("note.bass");
             return;
         }
 
+        setGuildTag(player, namaGuild);
         player.sendMessage(
-            `§r§l§e[§GUILD§e]§r §aKamu berhasil membuat guild §b${namaGuild} §adengan maksimal member §c${maksMember}`
+            `§r§l§e[§bGUILD§e]§r §aKamu berhasil membuat guild §b${namaGuild} §adengan maksimal member §c${maksMember}`
         );
         player.playSound("random.levelup");
     });
@@ -156,6 +209,7 @@ export async function GuildSearch(player: Player | any) {
         if (!resp.status) {
             player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp.message}`);
             player.playSound("note.bass");
+            return;
         }
 
         let form = new ActionFormData();
@@ -170,12 +224,30 @@ export async function GuildSearch(player: Player | any) {
         }
 
         for (const guild of guilds) {
-            form.button(`${guild.name}\n${guild.description}`);
+            form.button(`${guild.name}§r\n${guild.description}`);
         }
 
         form.show(player).then(async (result) => {
             if (result.canceled) return;
             const guild = guilds[result.selection!];
+            const resp_join = await MechAPI.joinGuild(player, guild.guildId);
+            if (!resp_join.status) {
+                player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_join.message}`);
+                player.playSound("note.bass");
+                return;
+            }
+
+            setGuildTag(player, guild.name);
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §aBerhasil memasuki guild §f${guild.name}`);
+            player.playSound("horn.call.1");
+
+            const guildPlayers = getGuildPlayers(guild.name);
+            for (const guildPlayer of guildPlayers) {
+                if (guildPlayer.name != player.name) {
+                    guildPlayer.sendMessage(`§r§l§e[§bGUILD§e]§r §o§c${player.name} §atelah memasuki guild`);
+                    guildPlayer.playSound("horn.call.1");
+                }
+            }
         });
     } catch (error) {
         player.sendMessage(`§r§l§e[§bGUILD§e]§r §cGagal mendapatkan player aktif, silahkan hubungi admin.`);
@@ -184,10 +256,10 @@ export async function GuildSearch(player: Player | any) {
     }
 }
 
-export async function GuildMember(player: Player, guildName: string, members: any) {
+export async function GuildMember(player: Player, guild: any, members: any, guildRole: string) {
     try {
         let form = new ActionFormData();
-        form.title(`§l§cMember Guild §r${guildName}`);
+        form.title(`§l§cMember Guild §r${guild.name}`);
 
         if (members.length == 0) {
             player.sendMessage(`§r§l§e[§bGUILD§e]§r §6Tidak ada member disini.`);
@@ -196,14 +268,14 @@ export async function GuildMember(player: Player, guildName: string, members: an
         }
 
         for (const member of members) {
-            const isGuildStaff = ["LEADER", "OFFICER"].includes(member.memberRole);
-            form.button(member.member.name, isGuildStaff ? "textures/ui/op" : "textures/ui/permissions_member_star");
+            const isGuildOFFICER = ["LEADER", "OFFICER"].includes(member.memberRole);
+            form.button(member.member.name, isGuildOFFICER ? "textures/ui/op" : "textures/ui/permissions_member_star");
         }
 
         form.show(player).then(async (result) => {
             if (result.canceled) return;
             const member = members[result.selection!];
-            MemberSettings(player, guildName, member);
+            MemberSettings(player, guild, member, guildRole);
         });
     } catch (error) {
         player.sendMessage(`§r§l§e[§bGUILD§e]§r §cGagal mendapatkan player aktif, silahkan hubungi admin.`);
@@ -212,27 +284,32 @@ export async function GuildMember(player: Player, guildName: string, members: an
     }
 }
 
-export async function MemberSettings(player: Player, guildName: string, member: any) {
+export async function MemberSettings(player: Player, guild: any, member: any, guildRole: string) {
     let form = new ActionFormData();
-    player.sendMessage(viewObj(member));
-    form.body(`\n               §¶[ §l§cMember §6Settings §r ]
+    form.body(`\n               §¶[ §l§cMember §6Profile §r ]
     
     §fNama: §b${member.member.name}
     §fRole: §d${member.memberRole}
   `);
 
-    form.button("Promote member", "textures/ui/accessibility_glyph_color");
-    form.button("Tendang dari guild", "textures/ui/realms_red_x");
-    form.show(player).then((result) => {
-        if (result.canceled) return;
-        if (result.selection == 0) MemberPromote(player, member);
-        if (result.selection == 1) MemberKick(player, guildName, member);
-    });
+    if (guildRole != "MEMBER") {
+        form.button("Promote member", "textures/ui/accessibility_glyph_color");
+        form.button("Tendang dari guild", "textures/ui/realms_red_x");
+        form.show(player).then((result) => {
+            if (result.canceled) return;
+            if (result.selection == 0) MemberPromote(player, guild, member);
+            if (result.selection == 1) MemberKick(player, guild, member);
+        });
+    } else {
+        form.button("Tutup");
+        form.show(player);
+    }
 }
 
-export async function MemberPromote(player: Player, member: any) {
+export async function MemberPromote(player: Player, guild: any, member: any) {
     let form = new ModalFormData();
-    const guildRole = ["STAFF", "MEMBER"];
+    const guildRole = ["OFFICER", "MEMBER"];
+    const indexRole = guildRole.findIndex((v) => v == member.memberRole);
     form.dropdown(
         `\n               §¶[ §l§cMember §6Promote §r ]
   
@@ -240,18 +317,53 @@ export async function MemberPromote(player: Player, member: any) {
   §fRole: §d${member.memberRole}
 `,
         guildRole,
-        guildRole.findIndex((v) => v == member.memberRole)
+        indexRole == -1 ? 0 : indexRole
     );
 
-    form.show(player).then((result) => {
+    form.show(player).then(async (result) => {
         if (result.canceled) return;
         let values = result.formValues as number[];
         let role = guildRole[values![0]];
-        //TODO: change member role
+        const resp_promote = await MechAPI.promoteMemberGuild(player, guild, member.member, role);
+        if (!resp_promote.status) {
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_promote.message}`);
+            player.playSound("note.bass");
+            return;
+        }
+
+        const guildPlayers = getGuildPlayers(guild.name);
+        const memberPlayer = getPlayerByName(member.member.name);
+        if (role == "OFFICER") {
+            if (memberPlayer) {
+                memberPlayer.sendMessage(`§r§l§e[§bGUILD§e]§r §aSelamat kamu telah dipromosikan menjadi §d${role}`);
+                memberPlayer.playSound("horn.call.1");
+            }
+
+            for (const guildPlayer of guildPlayers) {
+                if (guildPlayer.name != member.member.name) {
+                    guildPlayer.sendMessage(
+                        `§r§l§e[§bGUILD§e]§r §o§c${member.member.name} §atelah dipromosikan menjadi §d${role}`
+                    );
+                }
+            }
+        } else if (role == "MEMBER") {
+            if (memberPlayer) {
+                memberPlayer.sendMessage(`§r§l§e[§bGUILD§e]§r §aKamu telah diturunkan menjadi §d${role}`);
+                memberPlayer.playSound("random.pop2");
+            }
+
+            for (const guildPlayer of guildPlayers) {
+                if (guildPlayer.name != member.member.name) {
+                    guildPlayer.sendMessage(
+                        `§r§l§e[§bGUILD§e]§r §o§c${member.member.name} §atelah diturunkan menjadi §d${role}`
+                    );
+                }
+            }
+        }
     });
 }
 
-export async function MemberKick(player: Player, guildName: string, member: any) {
+export function MemberKick(player: Player, guild: any, member: any) {
     new MessageFormData()
         .body(
             `\n               §¶[ §l§cMember §6Kick ]
@@ -265,18 +377,183 @@ export async function MemberKick(player: Player, guildName: string, member: any)
         .button1("§l§cTidak, Biarkan saja.")
         .button2("§l§2Ya, tendang!")
         .show(player)
-        .then((result) => {
+        .then(async (result) => {
             if (result.canceled) return;
             if (result.selection == 1) {
                 // Terima
-                // TODO: kick player
+                const resp_leave = await MechAPI.leaveGuild(member.member, guild.guildId);
+                if (!resp_leave.status) {
+                    player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_leave.message}`);
+                    player.playSound("note.bass");
+                    return;
+                }
+
+                const guildPlayers = getGuildPlayers(guild.name);
+                for (const guildPlayer of guildPlayers) {
+                    if (guildPlayer.name != member.member.name) {
+                        guildPlayer.sendMessage(
+                            `§r§l§e[§bGUILD§e]§r §o§c${member.member.name} §atelah di kick dari guild`
+                        );
+                    }
+                }
+
                 const kickPlayer = getPlayerByName(member.member.name);
                 if (kickPlayer) {
-                    kickPlayer.sendMessage(`§r§l§e[§bGUILD§e]§r §6Anda telah dikeluarkan dari guild §r${guildName}`);
+                    removeGuildTag(kickPlayer);
+                    kickPlayer.sendMessage(`§r§l§e[§bGUILD§e]§r §6Anda telah dikeluarkan dari guild §r${guild.name}`);
                     kickPlayer.playSound("horn.call.7");
                 }
                 player.sendMessage(`§r§l§e[§bGUILD§e]§r §b${member.member.name} §aBerhasil dikeluarkan.`);
                 player.playSound("horn.call.7");
+            }
+        });
+}
+
+export async function GuildSettings(player: Player, user: MechaPlayer) {
+    const resp = await MechAPI.getGuildMemberCost(player);
+    if (!resp.status) {
+        player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp.message}`);
+        player.playSound("note.bass");
+        return;
+    }
+
+    const cost_member: number = resp.result.cost_member;
+
+    const resp_guild = await MechAPI.getGuild(player, user.guildId);
+    if (!resp_guild.status) {
+        player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_guild.message}`);
+        player.playSound("note.bass");
+        return;
+    }
+
+    const guild = resp_guild.result;
+
+    let modal = new ModalFormData();
+    modal.title("§l§cPengaturan §6Guild");
+    modal.textField(
+        `§a-------------------------------
+
+§6Informasi Pemain:
+§fNama: §b${player.nameTag}
+§fUang: §a${user.money}
+§fRole: §d${user.guildMember.memberRole}
+
+§6Informasi Guild:
+§fNama: §b${guild.name}§r
+§fMember: §a${guild.members.length}§f/§a${guild.maxMembers}
+
+§3Note:
+§f- §6Peningkatan guild akan dikenakan biaya §a${cost_member} §6untuk setiap membernya.
+§f- §6Penurunan jumlah anggota akan ada cashback sebesar §e50 persen
+
+§a-------------------------------
+
+§fNama:`,
+        "Masukan nama guild ...",
+        guild.name
+    );
+    modal.textField("§fDeskripsi:", "Masukan deskripsi guild ...", guild.description);
+    modal.textField(`§fMaks member:`, "Masukan angka maksimal member", guild.maxMembers.toString());
+    modal.toggle("§fGuild publik", guild.isPublic);
+    modal.show(player).then(async (res) => {
+        if (res.canceled) return;
+
+        if (!res.formValues![0]) {
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cNama guild tidak valid!`);
+            player.playSound(`note.bass`);
+            return;
+        }
+        const namaGuild = res.formValues![0] as string;
+
+        if (!res.formValues![1]) {
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cDeskripsi guild tidak valid!`);
+            player.playSound(`note.bass`);
+            return;
+        }
+        const deskripsiGuild = res.formValues![1] as string;
+
+        if (!res.formValues![2]) {
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cMasukan maksimal member!`);
+            player.playSound(`note.bass`);
+            return;
+        }
+        if (isNaN(res.formValues![2] as number)) {
+            player.sendMessage(`§r§l§e[§bGUILD§e]§r §cKamu hanya bisa memasukan level memakai angka`);
+            player.playSound(`note.bass`);
+            return;
+        }
+        let maksMember = res.formValues![2] as number;
+
+        const guildPublik = res.formValues![3] as boolean;
+
+        let guild_cost = maksMember * cost_member;
+        if (user.money < guild_cost) {
+            player.sendMessage(
+                `§r§l§e[§bGUILD§e]§r §cUang anda saat ini §a${user.money} §ctidak cukup untuk membuat guild dengan §b${maksMember} member §cdan total biaya §a${guild_cost}`
+            );
+            player.playSound(`note.bass`);
+            return;
+        }
+
+        const resp_update = await MechAPI.updateGuild(player, namaGuild, deskripsiGuild, maksMember, guildPublik);
+        if (!resp_update.status) {
+            if (resp_update.not_enough_money) {
+                player.sendMessage(
+                    `§r§l§e[§bGUILD§e]§r §cUang anda saat ini §a${user.money} §ctidak cukup untuk meningkatkan guild ke §b${maksMember} member §cdan total biaya §a${guild_cost}`
+                );
+            } else if (resp_update.failed_update_member) {
+                player.sendMessage(
+                    `§r§l§e[§bGUILD§e]§r §cGagal mengubah jumlah maksimal member. Total member saat ini §e${guild.members.length} §cdan kamu meminta perubahan jumlah member ke §e${maksMember}`
+                );
+            } else {
+                player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_update.message}`);
+            }
+            player.playSound("note.bass");
+            return;
+        }
+
+        player.sendMessage(`§r§l§e[§bGUILD§e]§r §aKamu berhasil mengubah identitas guild §b${namaGuild}`);
+        player.playSound("random.levelup");
+    });
+}
+
+export async function GuildDelete(player: Player, guild: any) {
+    new MessageFormData()
+        .body(
+            `\n               §¶[ §l§cGuild §6Delete §f]
+  
+§6Yakin kick menghapus guild ${guild.name}? 
+§cIni akan mengeluarkan semua member dan menghapus guild secara permanen.
+`
+        )
+        .button1("§l§cTidak.")
+        .button2("§l§2Ya, hapus!")
+        .show(player)
+        .then(async (result) => {
+            if (result.canceled) return;
+            if (result.selection == 1) {
+                // Terima
+                const guildPlayers = getGuildPlayers(guild.name);
+
+                const resp_delete = await MechAPI.deleteGuild(player);
+                if (!resp_delete.status) {
+                    player.sendMessage(`§r§l§e[§bGUILD§e]§r §c${resp_delete.message}`);
+                    player.playSound("note.bass");
+                    return;
+                }
+
+                player.sendMessage(`§r§l§e[§bGUILD§e]§r §o§aMember telah dikeluarkan dan guild berhasil dihapus.`);
+                player.playSound("horn.call.7");
+
+                for (const guildPlayer of guildPlayers) {
+                    if (guildPlayer.name != player.name) {
+                        guildPlayer.sendMessage(
+                            `§r§l§e[§bGUILD§e]§r §o§6Kamu telah dikeluarkan dari guild, karena guild §f${guild.name}§r §6telah dihapus.`
+                        );
+                        guildPlayer.playSound("horn.call.7");
+                    }
+                    removeGuildTag(guildPlayer);
+                }
             }
         });
 }

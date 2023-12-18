@@ -1,7 +1,5 @@
 import { world, system, Vector, Player } from "@minecraft/server";
 import { MenuForm } from "./menu";
-import { ShopUI } from "./shop";
-import { TpaUI } from "./tpa";
 import { checkRole, formatRole } from "./chatrole";
 import { commands, prefix } from "./commands";
 import { showScoreboard, giftPlayer, messageInfo } from "./scoreboard";
@@ -45,7 +43,7 @@ world.beforeEvents.chatSend.subscribe(async (msg) => {
                 msg.sendToTargets = true;
             }
             const playerRole = checkRole(player);
-            const roleFormat = formatRole(playerRole);
+            const roleFormat = formatRole(player, playerRole);
             msg.cancel = true;
             const chatFormat = `${roleFormat} §3${player.name}§c: §r${message}`;
             player.runCommandAsync(`tellraw @a {"rawtext":[{"text":"${chatFormat}"}]}`);
@@ -71,7 +69,7 @@ world.afterEvents.playerSpawn.subscribe(async (ev) => {
     try {
         if (ev.initialSpawn) {
             player.sendMessage(
-                `Halo §6${player.nameTag}§f Selamat datang di §aMecha§cCraft §f Gunakan perintah §b!help §funtuk membuka bantuan perintah.`
+                `Halo §6${player.nameTag}§f Selamat datang di §aMecha§cCraft §f Gunakan perintah §b!menu §funtuk mendapatkan menu ui.`
             );
 
             MechAPI.registerUser(player);
@@ -103,13 +101,12 @@ system.runInterval(() => {
 
         if (tickIndex === 1) {
             world.getDimension("overworld").runCommandAsync("say §aMecha Asset Active");
-            // world.scoreboard.addObjective("money", "money");
             MechAPI.getConfig({} as Player);
         }
 
         for (let player of world.getPlayers()) {
             const playerRole = checkRole(player);
-            const roleFormat = formatRole(playerRole);
+            const roleFormat = formatRole(player, playerRole);
             const nametagFormat = `${roleFormat} §3${player.name}`;
 
             player.nameTag = nametagFormat;
@@ -129,4 +126,4 @@ system.runInterval(() => {
     } catch (e) {
         showErrorToOP(e);
     }
-});
+}, 2);

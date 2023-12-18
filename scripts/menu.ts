@@ -9,11 +9,11 @@ import { WaypointForm } from "./waypoint";
 import { VoicePageAdmin, VoicePageUser } from "./voice";
 import { ServerMenu } from "./server";
 import MechAPI from "./libs/mechapi";
-import { getPlayersRole } from "./libs/utils";
+import { getPlayersRole, viewObj } from "./libs/utils";
 import { MechaPlayer } from "./libs/types";
 import { GuildMenu } from "./guild";
 
-export async function MenuForm(player: Player | any) {
+export async function MenuForm(player: Player) {
     const resp = await MechAPI.getUser(player);
     const userRole = checkRole(player);
     if (!resp.status) {
